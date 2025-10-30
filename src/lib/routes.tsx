@@ -8,23 +8,26 @@ import { useUserStore } from '../stores/user.store';
 /**
  * Configuración de rutas de la aplicación
  */
-export const routes: RouteObject[] = [
+function LoginRoute() {
+  const token = useUserStore((s) => s.token);
+  const user = useUserStore((s) => s.user);
+  return token && user ? <Navigate to="/dashboard" replace /> : <LoginPage />;
+}
 
+function DashboardRoute() {
+  const token = useUserStore((s) => s.token);
+  const user = useUserStore((s) => s.user);
+  return token && user ? <SideBar /> : <Navigate to="/login" replace />;
+}
+
+export const routes: RouteObject[] = [
   {
     path: '/login',
-    element: (() => {
-      const token = useUserStore.getState().token;
-      const user = useUserStore.getState().user;
-      return token && user ? <Navigate to="/dashboard" replace /> : <LoginPage />;
-    })(),
+    element: <LoginRoute />,
   },
   {
     path: '/dashboard',
-    element: (() => {
-      const token = useUserStore.getState().token;
-      const user = useUserStore.getState().user;
-      return token && user ? <SideBar /> : <Navigate to="/login" replace />;
-    })(),
+    element: <DashboardRoute />,
     children: [
       {
         index: true,
