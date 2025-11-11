@@ -13,10 +13,13 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Button,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { menuItems } from '../lib/menuItems';
+import { useUserStore } from '../stores/user.store';
 import type { TypeMenuItem } from '../types/utils.types';
 
 const drawerWidth = 240;
@@ -25,9 +28,15 @@ const SideBar = () => {
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const logout = useUserStore((state) => state.logout);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -54,9 +63,17 @@ const SideBar = () => {
           >
             {open ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Dashboard
           </Typography>
+          <Button
+            color="inherit"
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
+            sx={{ ml: 2 }}
+          >
+            Cerrar Sesión
+          </Button>
         </Toolbar>
       </AppBar>
       <Drawer
