@@ -1,55 +1,56 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useUserStore } from '../stores/user.store';
-import { Box, CircularProgress, Typography } from '@mui/material';
-import toast from 'react-hot-toast';
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUserStore } from "../stores/user.store";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import toast from "react-hot-toast";
+import { userService } from "../services/user.service";
 
 const AuthCallbackPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setToken, setUser } = useUserStore();
 
-  useEffect(() => {
-    const token = searchParams.get('token');
-    const userParam = searchParams.get('user');
-    const error = searchParams.get('error');
-
-    if (error) {
-      toast.error('Error al autenticar con Google');
-      navigate('/login');
+  const getDataMe = async (token: string | null) => {
+    if (!token) {
+      toast.error("No se recibió el token de autenticación");
+      navigate("/login");
       return;
     }
 
-    if (token && userParam) {
-      try {
-       
-        const user = JSON.parse(decodeURIComponent(userParam));
-        
-       
-        setToken(token);
-        setUser(user);
-        
-        toast.success('Inicio de sesión exitoso');
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Error al procesar el callback:', error);
-        toast.error('Error al procesar la autenticación');
-        navigate('/login');
-      }
+    setToken(token);
+    const { success, data, message } = await userService.getUserMe();
+
+    if (success && data) {
+      setUser(data);
+      toast.success("Inicio de sesión exitoso");
+      navigate("/dashboard");
     } else {
-      toast.error('No se recibieron los datos de autenticación');
-      navigate('/login');
+      toast.error(message);
+      navigate("/login");
     }
+  };
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const error = searchParams.get("error");
+
+    if (error) {
+      toast.error("Error al autenticar con Google");
+      navigate("/login");
+      return;
+    }
+
+    getDataMe(token);
   }, [searchParams, navigate, setToken, setUser]);
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
         gap: 2,
       }}
     >
@@ -62,5 +63,3 @@ const AuthCallbackPage = () => {
 };
 
 export default AuthCallbackPage;
-
-
