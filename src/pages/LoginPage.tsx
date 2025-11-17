@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TextField,
@@ -13,14 +13,62 @@ import { authService } from '../services/auth.service';
 import { useUserStore } from '../stores/user.store';
 import { FcGoogle } from 'react-icons/fc';
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: { access_token: string }) => void;
+          }) => {
+            requestAccessToken: () => void;
+          };
+        };
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+          }) => void;
+          renderButton: (element: HTMLElement, config: { theme?: string; size?: string; text?: string }) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setToken, setUser } = useUserStore();
 
+  
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      
+    };
+    document.head.appendChild(script);
+
+    return () => {
+     
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const { success, data, message } = await authService.login(email, password);
     if (success && data) {
       setUser(data.user);
@@ -29,6 +77,26 @@ const LoginPage = () => {
       toast.success(message);
     } else {
       toast.error(message);
+    }
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const baseURL = import.meta.env.VITE_API_URL_BACKEND;
+      
+      // El backend debe manejar todo el flujo OAuth
+      // Redirigir al endpoint del backend que iniciará el flujo OAuth de Google
+      // El backend debe tener configurada la URL de callback correctamente
+      const redirectURL = `${baseURL}/auth/google`;
+      
+      // Agregar el redirect_uri si el backend lo requiere
+      // Normalmente el backend maneja esto internamente
+      window.location.href = redirectURL;
+    } catch (error) {
+      toast.error('Error al iniciar sesión con Google');
+      setLoading(false);
     }
   };
 
@@ -99,8 +167,9 @@ const LoginPage = () => {
               variant="contained"
               color="primary"
               sx={{ py: 1.3, mt: 1 }}
+              disabled={loading}
             >
-              Ingresar
+              {loading ? 'Ingresando...' : 'Ingresar'}
             </Button>
 
             {/*  Enlace de Registro — Comentado por ahora */}
@@ -128,8 +197,10 @@ const LoginPage = () => {
               variant="outlined"
               startIcon={<FcGoogle />}
               sx={{ py: 1.3, fontWeight: 'bold' }}
+              onClick={handleGoogleLogin}
+              disabled={loading}
             >
-              Google
+              {loading ? 'Conectando...' : 'Continuar con Google'}
             </Button>
           </Box>
         </Box>

@@ -3,11 +3,10 @@ import { Navigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import SideBar from '../components/SideBar';
 import HomePage from '../pages/HomePage';
+import AuthCallbackPage from '../pages/AuthCallbackPage';
 import { useUserStore } from '../stores/user.store';
 
-/**
- * Configuración de rutas de la aplicación
- */
+
 function LoginRoute() {
   const token = useUserStore((s) => s.token);
   const user = useUserStore((s) => s.user);
@@ -24,6 +23,10 @@ export const routes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginRoute />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
   },
   {
     path: '/dashboard',
