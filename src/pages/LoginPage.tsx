@@ -1,43 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TextField,
   Button,
   Typography,
   Box,
-  // Checkbox,
-  // FormControlLabel,
 } from '@mui/material';
 import toast from 'react-hot-toast';
 import { authService } from '../services/auth.service';
 import { useUserStore } from '../stores/user.store';
 import { FcGoogle } from 'react-icons/fc';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        oauth2: {
-          initTokenClient: (config: {
-            client_id: string;
-            scope: string;
-            callback: (response: { access_token: string }) => void;
-          }) => {
-            requestAccessToken: () => void;
-          };
-        };
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-          }) => void;
-          renderButton: (element: HTMLElement, config: { theme?: string; size?: string; text?: string }) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
-}
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -118,7 +91,7 @@ const LoginPage = () => {
       <div
         className="hidden md:flex w-1/2 bg-cover bg-center"
       >
-        <div className="w-full h-full bg-gradient-to-r from-blue-700/70 to-transparent"></div>
+        <div className="w-full h-full bg-linear-to-r from-blue-700/70 to-transparent"></div>
       </div>
 
       <div className="flex w-full md:w-1/2 justify-center items-center p-8">
@@ -185,24 +158,10 @@ const LoginPage = () => {
               {loading ? 'Ingresando...' : 'Ingresar'}
             </Button>
 
-            {/*  Enlace de Registro — Comentado por ahora */}
-            {/*
-            <Typography
-              variant="body2"
-              align="center"
-              sx={{ mt: 3, color: 'text.secondary' }}
-            >
-              ¿No tienes una cuenta?{' '}
-              <a href="#" className="text-blue-600 hover:underline">
-                Regístrate
-              </a>
-            </Typography>
-            */}
-
             <div className="flex items-center my-4">
-              <div className="flex-grow border-t border-gray-300"></div>
+              <div className="grow border-t border-gray-300"></div>
               <span className="mx-2 text-gray-400">O continúa con</span>
-              <div className="flex-grow border-t border-gray-300"></div>
+              <div className="grow border-t border-gray-300"></div>
             </div>
 
             <Button

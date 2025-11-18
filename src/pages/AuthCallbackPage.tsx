@@ -117,25 +117,25 @@ const AuthCallbackPage = () => {
         // Verificar que el usuario se guardó correctamente
         await new Promise(resolve => setTimeout(resolve, 200));
         const { user: storedUser, token: storedTokenAfter } = useUserStore.getState();
-        console.log("✅ Usuario guardado:", storedUser ? "✅ Confirmado" : "❌ No se guardó");
-        console.log("✅ Token aún presente:", storedTokenAfter ? "✅ Sí" : "❌ No");
-        console.log("📋 Usuario completo en store:", storedUser);
+        console.log(" Usuario guardado:", storedUser ? " Confirmado" : " No se guardó");
+        console.log(" Token aún presente:", storedTokenAfter ? " Sí" : " No");
+        console.log(" Usuario completo en store:", storedUser);
         
         if (!storedUser || !storedTokenAfter) {
-          console.error("❌ El usuario o token no se guardaron correctamente");
+          console.error(" El usuario o token no se guardaron correctamente");
           toast.error("Error al guardar los datos de autenticación");
           navigate("/login", { replace: true });
           return;
         }
         
         toast.success("Inicio de sesión exitoso");
-        console.log("🚀 Redirigiendo a /dashboard...");
+        console.log(" Redirigiendo a /dashboard...");
         // Esperar un momento adicional para asegurar que todo esté sincronizado
         await new Promise(resolve => setTimeout(resolve, 300));
         navigate("/dashboard", { replace: true });
       } else {
-        console.error("❌ Error al obtener usuario:", message);
-        console.error("❌ Detalles del error:", {
+        console.error(" Error al obtener usuario:", message);
+        console.error(" Detalles del error:", {
           message,
           token: token ? "Presente" : "Ausente",
           url: window.location.href
@@ -156,8 +156,8 @@ const AuthCallbackPage = () => {
         navigate("/login", { replace: true });
       }
     } catch (error) {
-      console.error("❌ Excepción al obtener el usuario:", error);
-      console.error("❌ Detalles de la excepción:", {
+      console.error(" Excepción al obtener el usuario:", error);
+      console.error(" Detalles de la excepción:", {
         error,
         token: token ? "Presente" : "Ausente",
         url: window.location.href
@@ -191,7 +191,7 @@ const AuthCallbackPage = () => {
     console.log("========================================");
 
     if (error) {
-      console.error("❌ Error en callback:", error);
+      console.error(" Error en callback:", error);
       const errorMessage = decodeURIComponent(error);
       
       // Mensajes específicos según el tipo de error
@@ -211,10 +211,10 @@ const AuthCallbackPage = () => {
     }
 
     if (token) {
-      console.log("✅ Procesando autenticación...");
+      console.log(" Procesando autenticación...");
       processAuth(token, userParam);
     } else {
-      console.error("❌ No se recibió el token");
+      console.error(" No se recibió el token");
       console.error("Parámetros disponibles:", Object.fromEntries(searchParams.entries()));
       toast.error("No se recibió el token de autenticación. Verifica la configuración del backend.");
       navigate("/login", { replace: true });
