@@ -52,4 +52,10 @@ export const authService = {
       };
     }
   },
+
+  redirectToGoogleLogin: () => {
+    const baseURL = import.meta.env.VITE_API_URL_BACKEND;
+    const redirectURL = `${baseURL}/auth/google`;
+    window.location.href = redirectURL;
+  },
 };
