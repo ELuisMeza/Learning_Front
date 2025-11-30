@@ -34,9 +34,4 @@ export const authService = {
     window.location.href = `${baseURL}/auth/google`;
   },
 
-  redirectToGoogleLogin: () => {
-    const baseURL = import.meta.env.VITE_API_URL_BACKEND;
-    const redirectURL = `${baseURL}/auth/google`;
-    window.location.href = redirectURL;
-  },
 };
