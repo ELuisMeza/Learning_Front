@@ -23,12 +23,8 @@ apiService.interceptors.request.use(
     }
     
    
-    if (!token && !isAuthRequest) {
-      const currentPath = window.location.pathname;
-      if (currentPath !== '/login') {
-        window.location.href = '/login';
-      }
-    }
+    // NO redirigir aquí - dejar que las rutas protegidas manejen la autenticación
+    // Esto evita loops infinitos y pantallas en blanco
     
     return config;
   },
@@ -50,12 +46,27 @@ apiService.interceptors.response.use(
   },
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      useUserStore.getState().logout();
-      
       const isLoginRequest = error.config?.url?.includes('/auth/login');
-      if (window.location.pathname !== '/login' && !isLoginRequest) {
-        window.location.href = '/login';
+      const isAuthCallback = window.location.pathname === '/auth/callback';
+      const isUsersMeRequest = error.config?.url?.includes('/users/me');
+      
+      // NO redirigir si estamos en el proceso de autenticación (callback)
+      // Esto permite que AuthCallbackPage maneje el error correctamente
+      if (!isLoginRequest && !isAuthCallback) {
+        useUserStore.getState().logout();
+        
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
+      
+      // Si es una petición a /users/me desde el callback, no hacer logout
+      // para permitir que el callback maneje el error
+      if (isUsersMeRequest && isAuthCallback) {
+        // No hacer logout aquí, dejar que AuthCallbackPage maneje el error
+        return Promise.reject(error);
+      }
+      
       return Promise.reject(error);
     }
 

@@ -19,6 +19,23 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { setToken, setUser } = useUserStore();
 
+  // Verificar si regresamos de Google sin pasar por el callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleError = urlParams.get('error');
+    const fromGoogle = document.referrer.includes('google.com') || document.referrer.includes('accounts.google.com');
+    
+    if (fromGoogle && window.location.pathname === '/login' && !googleError) {
+      console.error("========================================");
+      console.error("ERROR: El backend NO redirigió al callback");
+      console.error("========================================");
+      console.error("El backend debe redirigir a: http://localhost:5173/auth/callback?token=...&user=...");
+      console.error("Pero en su lugar redirigió a: /login");
+      console.error("========================================");
+      toast.error("Error de configuración: El backend no está redirigiendo correctamente después de autenticar con Google. Verifica la configuración del backend.");
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -35,6 +52,36 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
+    console.log("========================================");
+    console.log("INICIANDO LOGIN CON GOOGLE");
+    console.log("========================================");
+    const baseURL = import.meta.env.VITE_API_URL_BACKEND;
+    const redirectURL = `${baseURL}/auth/google`;
+    console.log("URL del backend:", baseURL);
+    console.log("Redirigiendo a:", redirectURL);
+    console.log("URL esperada del callback:", window.location.origin + "/auth/callback");
+    console.log("========================================");
+    
+    // Agregar un listener para detectar cuando regresamos de Google
+    const checkCallback = setInterval(() => {
+      const currentURL = window.location.href;
+      console.log("URL actual:", currentURL);
+      
+      if (currentURL.includes('/auth/callback')) {
+        console.log("¡Llegamos al callback!");
+        clearInterval(checkCallback);
+      } else if (currentURL.includes('/login') && !currentURL.includes('google')) {
+        console.log("Regresamos al login sin pasar por el callback");
+        console.log("Esto significa que el backend NO está redirigiendo correctamente");
+        clearInterval(checkCallback);
+      }
+    }, 500);
+    
+    // Limpiar el intervalo después de 30 segundos
+    setTimeout(() => {
+      clearInterval(checkCallback);
+    }, 30000);
+    
     setLoading(true);
     authService.redirectToGoogleLogin();
   };

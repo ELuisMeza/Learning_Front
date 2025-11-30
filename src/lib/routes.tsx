@@ -4,6 +4,14 @@ import LoginPage from '../pages/LoginPage';
 import SideBar from '../components/SideBar';
 import HomePage from '../pages/HomePage';
 import AuthCallbackPage from '../pages/AuthCallbackPage';
+import ClassesPage from '../pages/ClassesPage';
+import RubricsPage from '../pages/RubricsPage';
+import EvaluationsPage from '../pages/EvaluationsPage';
+import ScanQRPage from '../pages/ScanQRPage';
+import MyClassesPage from '../pages/MyClassesPage';
+import MyEvaluationsPage from '../pages/MyEvaluationsPage';
+import EvaluationFormPage from '../pages/EvaluationFormPage';
+import SettingsPage from '../pages/SettingsPage';
 import { useUserStore } from '../stores/user.store';
 
 
@@ -16,7 +24,15 @@ function LoginRoute() {
 function DashboardRoute() {
   const token = useUserStore((s) => s.token);
   const user = useUserStore((s) => s.user);
-  return token && user ? <SideBar /> : <Navigate to="/login" replace />;
+  
+  // Verificar que tanto el token como el usuario estén presentes y sean válidos
+  const isAuthenticated = token && user && user.id && user.email;
+  
+  if (isAuthenticated) {
+    return <SideBar />;
+  } else {
+    return <Navigate to="/login" replace />;
+  }
 }
 
 export const routes: RouteObject[] = [
@@ -35,6 +51,41 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: <HomePage />,
+      },
+      // Rutas para Docente
+      {
+        path: 'classes',
+        element: <ClassesPage />,
+      },
+      {
+        path: 'rubrics',
+        element: <RubricsPage />,
+      },
+      {
+        path: 'evaluations',
+        element: <EvaluationsPage />,
+      },
+      // Rutas para Estudiante
+      {
+        path: 'scan-qr',
+        element: <ScanQRPage />,
+      },
+      {
+        path: 'my-classes',
+        element: <MyClassesPage />,
+      },
+      {
+        path: 'my-evaluations',
+        element: <MyEvaluationsPage />,
+      },
+      {
+        path: 'evaluation/:evaluationId',
+        element: <EvaluationFormPage />,
+      },
+      // Rutas para Administrador
+      {
+        path: 'settings',
+        element: <SettingsPage />,
       },
     ],
   },
