@@ -4,7 +4,7 @@ import { useUserStore } from '../stores/user.store';
 import ClassIcon from '@mui/icons-material/Class';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { AdministratorView } from '../components/home/AdministratorView';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -292,30 +292,7 @@ const HomePage = () => {
 
   // Contenido para Administrador
   if (userRole === 'administrador' || userRole === 'admin') {
-    return (
-      <Box>
-        <Typography variant="h4" gutterBottom>
-          Bienvenido, {user?.name}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Panel de administración
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
-          <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <SettingsIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              Configuración
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
-              Configura los parámetros generales del sistema.
-            </Typography>
-            <Button variant="contained" onClick={() => navigate('/dashboard/settings')}>
-              Configurar
-            </Button>
-          </Paper>
-        </Box>
-      </Box>
-    );
+    return <AdministratorView />;
   }
 
   // Contenido por defecto
