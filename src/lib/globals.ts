@@ -1,0 +1,1 @@
+export type TypeModality = 'hybrid' | 'in_person' | 'online';

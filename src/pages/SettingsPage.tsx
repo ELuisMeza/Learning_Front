@@ -39,28 +39,12 @@ import ClassIcon from '@mui/icons-material/Class';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonIcon from '@mui/icons-material/Person';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SchoolIcon from '@mui/icons-material/School';
 import toast from 'react-hot-toast';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel = (props: TabPanelProps) => {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`settings-tabpanel-${index}`}
-      aria-labelledby={`settings-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-};
+import { TabPanel } from '../components/settings/TabPanel';
+import { TabCarrers } from '../components/settings/TabCarrers';
+import { getStatusColor, getStatusLabel } from '../utils/configurations.utils';
+import { TabCycles } from '../components/settings/TabCycles';
 
 // Datos mockeados
 const mockCycles = [
@@ -129,11 +113,6 @@ const SettingsPage = () => {
     toast.success('Ciclo creado exitosamente');
   };
 
-  const handleCycleStatusChange = (cycleId: string, newStatus: 'active' | 'closed' | 'archived') => {
-    setCycles(cycles.map(c => c.id === cycleId ? { ...c, status: newStatus } : c));
-    toast.success(`Ciclo ${newStatus === 'active' ? 'activado' : newStatus === 'closed' ? 'cerrado' : 'archivado'}`);
-  };
-
   // Gestión de Módulos
   const handleCreateModule = () => {
     if (!moduleForm.name || !moduleForm.cycleId || !moduleForm.quota) {
@@ -198,32 +177,6 @@ const SettingsPage = () => {
     toast.success('Docente creado exitosamente');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'closed':
-        return 'warning';
-      case 'archived':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Activo';
-      case 'closed':
-        return 'Cerrado';
-      case 'archived':
-        return 'Archivado';
-      default:
-        return status;
-    }
-  };
-
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -241,6 +194,7 @@ const SettingsPage = () => {
           scrollButtons="auto"
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
+          <Tab icon={<SchoolIcon />} iconPosition="start" label="Carreras" />
           <Tab icon={<CalendarTodayIcon />} iconPosition="start" label="Ciclos" />
           <Tab icon={<BookIcon />} iconPosition="start" label="Módulos" />
           <Tab icon={<ClassIcon />} iconPosition="start" label="Clases" />
@@ -249,80 +203,19 @@ const SettingsPage = () => {
           <Tab icon={<CloudUploadIcon />} iconPosition="start" label="Importación Masiva" />
         </Tabs>
 
-        {/* Tab 1: Gestión de Ciclos */}
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6">Gestión de Ciclos Académicos</Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenCycleDialog(true)}
-            >
-              Crear Ciclo
-            </Button>
-          </Box>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Fecha Inicio</TableCell>
-                  <TableCell>Fecha Fin</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell align="right">Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {cycles.map((cycle) => (
-                  <TableRow key={cycle.id}>
-                    <TableCell>{cycle.name}</TableCell>
-                    <TableCell>{cycle.startDate}</TableCell>
-                    <TableCell>{cycle.endDate}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={getStatusLabel(cycle.status)}
-                        color={getStatusColor(cycle.status) as any}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      {cycle.status === 'active' && (
-                        <>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleCycleStatusChange(cycle.id, 'closed')}
-                            title="Cerrar ciclo"
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleCycleStatusChange(cycle.id, 'archived')}
-                            title="Archivar ciclo"
-                          >
-                            <ArchiveIcon />
-                          </IconButton>
-                        </>
-                      )}
-                      {cycle.status === 'closed' && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handleCycleStatusChange(cycle.id, 'archived')}
-                          title="Archivar ciclo"
-                        >
-                          <ArchiveIcon />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
+        
+        {/* Tab 1: Gestión de Carreras */}
+        {tabValue === 0 && (
+          <TabCarrers tabValue={tabValue} />
+        )}
 
+        {/* Tab 2: Gestión de Ciclos */}
+        {tabValue === 1 && (
+          <TabCycles tabValue={tabValue} />
+        )}
+        
         {/* Tab 2: Gestión de Módulos */}
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value={tabValue} index={2}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6">Gestión de Módulos por Ciclo</Typography>
             <Button
@@ -369,7 +262,7 @@ const SettingsPage = () => {
         </TabPanel>
 
         {/* Tab 3: Clases por Módulo */}
-        <TabPanel value={tabValue} index={2}>
+        <TabPanel value={tabValue} index={3}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6">Clases por Módulo</Typography>
             <Button
@@ -448,7 +341,7 @@ const SettingsPage = () => {
         </TabPanel>
 
         {/* Tab 4: Asignación de Docentes a Clases */}
-        <TabPanel value={tabValue} index={3}>
+        <TabPanel value={tabValue} index={4}>
           <Typography variant="h6" sx={{ mb: 3 }}>Asignación de Docentes a Clases</Typography>
           <Alert severity="info" sx={{ mb: 3 }}>
             Selecciona una clase para asignar o cambiar el docente responsable. Puedes editar la asignación desde la tabla de Clases.
@@ -505,7 +398,7 @@ const SettingsPage = () => {
         </TabPanel>
 
         {/* Tab 5: Gestión de Docentes */}
-        <TabPanel value={tabValue} index={4}>
+        <TabPanel value={tabValue} index={5}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6">Crear y Gestionar Docentes</Typography>
             <Button
@@ -553,8 +446,8 @@ const SettingsPage = () => {
           </TableContainer>
         </TabPanel>
 
-        {/* Tab 6: Importación Masiva */}
-        <TabPanel value={tabValue} index={5}>
+        {/* Tab 7: Importación Masiva */}
+        <TabPanel value={tabValue} index={6}>
           <Typography variant="h6" sx={{ mb: 3 }}>Importación Masiva de Usuarios</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, mb: 3 }}>
             <Card>
