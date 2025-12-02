@@ -1,5 +1,11 @@
-export interface TypeTeacher {
+export interface TypeTeacher extends TypeCreateTeacher {
   id: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TypeCreateTeacher {
   specialty: string;
   academicDegree: string;
   experienceYears: number;
@@ -7,7 +13,4 @@ export interface TypeTeacher {
   cvUrl: string;
   teachingModes: string;
   appellative: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
 }

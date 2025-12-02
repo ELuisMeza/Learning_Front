@@ -23,7 +23,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { getMenuItemsByRole } from '../lib/menuItems';
 import { useUserStore } from '../stores/user.store';
 import type { TypeMenuItem } from '../types/utils.types';
@@ -254,27 +253,6 @@ const SideBar = () => {
               ))}
             </List>
             <Divider sx={{ my: 2 }} />
-            <List sx={{ px: 1 }}>
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => navigate('/dashboard/settings')}
-                  sx={{
-                    borderRadius: 2,
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
-                    <SettingsIcon />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Configuración"
-                    primaryTypographyProps={{ fontSize: '0.9rem' }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            </List>
           </>
         )}
       </Drawer>
