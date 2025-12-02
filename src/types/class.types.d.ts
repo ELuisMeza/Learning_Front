@@ -1,4 +1,6 @@
 import type { TypeUser } from './user.types';
+import type { TypeAcademicModule } from './academic-modules.types';
+import type { TypeModality } from '../lib/globals';
 
 export interface TypeClass {
   id: string;
@@ -26,3 +28,31 @@ export interface TypeClassStudent {
   status: 'enrolled' | 'completed';
 }
 
+export interface TypeClassWithPagination {
+  id: string;
+  moduleId: string;
+  module: TypeAcademicModule | null;
+  code: string;
+  name: string;
+  description: string;
+  credits: number;
+  status: string;
+  teacherId: string;
+  appellative: string;
+  typeTeaching: TypeModality;
+  maxStudents: number;
+  createdAt: string;
+  updatedAt: string;
+  moduleName: string;
+}
+
+export interface TypeCreateClass {
+  moduleId: string;
+  code: string;
+  name: string;
+  description: string;
+  credits: number;
+  maxStudents: number;
+  teacherId: string;
+  typeTeaching: TypeModality;
+}

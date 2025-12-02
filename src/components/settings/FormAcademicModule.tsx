@@ -16,24 +16,22 @@ import {
   School as SchoolIcon,
   Description as DescriptionIcon,
   Numbers as NumbersIcon,
-  CreditCard as CreditCardIcon,
-  Schedule as ScheduleIcon,
   List as ListIcon,
 } from '@mui/icons-material';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import type { TypeCreateAcademicCycle, TypeAcademicCycle } from '../../types/academic-cycles';
-import { academicCyclesService } from '../../services/academic-cycles.service';
-import { useGetCarrers } from '../../hooks/useGetCarrers';
-import type { TypeCareer } from '../../types/carrers.types';
+import type { TypeAcademicModuleCreate, TypeAcademicModule } from '../../types/academic-modules.types';
+import { academicModulesService } from '../../services/academic-modules.service';
+import { useGetAcademicCyles } from '../../hooks/useGetAcademicCyles';
+import type { TypeAcademicCycle } from '../../types/academic-cycles';
 import toast from 'react-hot-toast';
 
 interface Props {
   onClose: () => void;
-  onSuccess?: (academicCycle: TypeAcademicCycle) => void;
+  onSuccess?: (academicModule: TypeAcademicModule) => void;
 }
 
 const schema = yup.object({
-  careerId: yup.string().required('La carrera es obligatoria'),
+  cycleId: yup.string().required('El ciclo académico es obligatorio'),
   code: yup.string().required('El código es obligatorio'),
   name: yup.string().required('El nombre es obligatorio'),
   description: yup.string().required('La descripción es obligatoria'),
@@ -43,22 +41,10 @@ const schema = yup.object({
     .required('El número de orden es obligatorio')
     .min(1, 'El número de orden debe ser al menos 1')
     .integer('Debe ser un número entero'),
-  creditsRequired: yup
-    .number()
-    .typeError('Debe ser un número')
-    .required('Los créditos requeridos son obligatorios')
-    .min(1, 'Los créditos deben ser al menos 1')
-    .integer('Debe ser un número entero'),
-  durationWeeks: yup
-    .number()
-    .typeError('Debe ser un número')
-    .required('La duración en semanas es obligatoria')
-    .min(1, 'La duración debe ser al menos 1 semana')
-    .integer('Debe ser un número entero'),
 });
 
-export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
-  const [allCareers, setAllCareers] = useState<TypeCareer[]>([]);
+export const FormAcademicModule = ({ onClose, onSuccess }: Props) => {
+  const [allCycles, setAllCycles] = useState<TypeAcademicCycle[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const loadingMoreRef = useRef(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,27 +52,25 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
   const lastSearchRef = useRef<string>('');
 
   const { 
-    carrers, 
+    academicCycles, 
     loading, 
     pagination, 
     params, 
     setParams 
-  } = useGetCarrers();
+  } = useGetAcademicCyles();
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TypeCreateAcademicCycle>({
+  } = useForm<TypeAcademicModuleCreate>({
     resolver: yupResolver(schema),
     defaultValues: {
-      careerId: '',
+      cycleId: '',
       code: '',
       name: '',
       description: '',
       orderNumber: 1,
-      creditsRequired: 120,
-      durationWeeks: 16,
     },
   });
 
@@ -117,7 +101,7 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
       if (lastSearchRef.current !== searchInput && !isSelectingRef.current) {
         lastSearchRef.current = searchInput;
         setParams({ search: searchInput, page: 1 });
-        setAllCareers([]); // Resetear cuando cambia la búsqueda
+        setAllCycles([]); // Resetear cuando cambia la búsqueda
       }
     }, 500);
 
@@ -128,26 +112,26 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
     };
   }, [searchInput, params.search, setParams]);
 
-  // Acumular carreras activas
+  // Acumular ciclos académicos activos
   useEffect(() => {
-    const activeCareers = carrers.filter((career) => career.status === 'active');
+    const activeCycles = academicCycles.filter((cycle) => cycle.status === 'active');
     
     if (params.page === 1) {
       // Primera página o nueva búsqueda: reemplazar
-      setAllCareers(activeCareers);
+      setAllCycles(activeCycles);
     } else {
       // Páginas siguientes: acumular
-      setAllCareers((prev) => {
+      setAllCycles((prev) => {
         const existingIds = new Set(prev.map((c) => c.id));
-        const newCareers = activeCareers.filter((c) => !existingIds.has(c.id));
-        return [...prev, ...newCareers];
+        const newCycles = activeCycles.filter((c) => !existingIds.has(c.id));
+        return [...prev, ...newCycles];
       });
     }
     loadingMoreRef.current = false;
-  }, [carrers, params.page]);
+  }, [academicCycles, params.page]);
 
-  // Cargar más carreras cuando se hace scroll
-  const loadMoreCareers = useCallback(() => {
+  // Cargar más ciclos cuando se hace scroll
+  const loadMoreCycles = useCallback(() => {
     if (
       !loading &&
       !loadingMoreRef.current &&
@@ -159,48 +143,48 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
     }
   }, [loading, pagination, setParams]);
 
-  // Cargar carreras iniciales al montar el componente
+  // Cargar ciclos iniciales al montar el componente
   useEffect(() => {
     lastSearchRef.current = '';
     setParams({ page: 1, limit: 20, search: '' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSubmit = async (data: TypeCreateAcademicCycle) => {
+  const onSubmit = async (data: TypeAcademicModuleCreate) => {
     try {
-      const { success, data: createdCycle, message } = await academicCyclesService.createAcademicCycle(data);
-      if (success && createdCycle) {
+      const { success, data: createdModule, message } = await academicModulesService.create(data);
+      if (success && createdModule) {
         toast.success(message);
-        onSuccess?.(createdCycle);
+        onSuccess?.(createdModule);
         onClose();
       } else {
         toast.error(message);
       }
     } catch (error) {
-      toast.error('Error al crear el ciclo académico');
+      toast.error('Error al crear el módulo académico');
     }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)}>
       <Grid container spacing={2} paddingTop={2}>
-        {/* Carrera con búsqueda y scroll infinito */}
+        {/* Ciclo Académico con búsqueda y scroll infinito */}
         <Grid size={{ xs: 12 }}>
           <Controller
-            name="careerId"
+            name="cycleId"
             control={control}
             render={({ field: { onChange, value, ...field } }) => (
-              <FormControl fullWidth error={!!errors.careerId}>
+              <FormControl fullWidth error={!!errors.cycleId}>
                 <Autocomplete
                   {...field}
-                  options={allCareers}
+                  options={allCycles}
                   getOptionLabel={(option) => 
                     typeof option === 'string' 
                       ? option 
                       : `${option.name} (${option.code})`
                   }
                   isOptionEqualToValue={(option, val) => option.id === val.id}
-                  value={allCareers.find((c) => c.id === value) || null}
+                  value={allCycles.find((c) => c.id === value) || null}
                   onChange={(_, newValue) => {
                     isSelectingRef.current = true;
                     onChange(newValue ? newValue.id : '');
@@ -239,7 +223,7 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
                         listboxNode.scrollTop + listboxNode.clientHeight >=
                         listboxNode.scrollHeight - 10
                       ) {
-                        loadMoreCareers();
+                        loadMoreCycles();
                       }
                     },
                     style: { maxHeight: '300px' },
@@ -247,10 +231,10 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
                   renderInput={(textFieldParams) => (
                     <TextField
                       {...textFieldParams}
-                      label="Carrera"
-                      placeholder="Buscar carrera..."
-                      error={!!errors.careerId}
-                      helperText={errors.careerId?.message}
+                      label="Ciclo Académico"
+                      placeholder="Buscar ciclo académico..."
+                      error={!!errors.cycleId}
+                      helperText={errors.cycleId?.message}
                       InputProps={{
                         ...textFieldParams.InputProps,
                         endAdornment: (
@@ -271,20 +255,20 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
                           {option.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {option.code}
+                          {option.code} - {option.careerName}
                         </Typography>
                       </Box>
                     </Box>
                   )}
                   noOptionsText={
-                    loading ? 'Cargando...' : 'No se encontraron carreras'
+                    loading ? 'Cargando...' : 'No se encontraron ciclos académicos'
                   }
                 />
                 {loading && pagination && pagination.page > 1 && pagination.page < pagination.totalPages && (
                   <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <CircularProgress size={16} />
                     <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                      Cargando más carreras...
+                      Cargando más ciclos...
                     </Typography>
                   </Box>
                 )}
@@ -303,7 +287,7 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
                 {...field}
                 autoFocus
                 label="Código"
-                placeholder="Ej: ING-C1"
+                placeholder="Ej: MAT101"
                 fullWidth
                 variant="outlined"
                 error={!!errors.code}
@@ -329,7 +313,7 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
               <TextField
                 {...field}
                 label="Nombre"
-                placeholder="Ej: Ciclo de Ingeniería"
+                placeholder="Ej: Matemática Básica"
                 fullWidth
                 variant="outlined"
                 error={!!errors.name}
@@ -355,7 +339,7 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
               <TextField
                 {...field}
                 label="Descripción"
-                placeholder="Descripción del ciclo académico"
+                placeholder="Descripción del módulo académico"
                 fullWidth
                 variant="outlined"
                 multiline
@@ -374,8 +358,8 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
           />
         </Grid>
 
-        {/* Número de Orden y Duración en la misma fila */}
-        <Grid size={{ xs: 12, sm: 6 }}>
+        {/* Número de Orden */}
+        <Grid size={{ xs: 12 }}>
           <Controller
             name="orderNumber"
             control={control}
@@ -393,59 +377,6 @@ export const FormAcademicCycles = ({ onClose, onSuccess }: Props) => {
                   startAdornment: (
                     <InputAdornment position="start">
                       <ListIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Controller
-            name="durationWeeks"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Duración (semanas)"
-                type="number"
-                fullWidth
-                variant="outlined"
-                error={!!errors.durationWeeks}
-                helperText={errors.durationWeeks?.message}
-                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <ScheduleIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Grid>
-
-        {/* Créditos Requeridos */}
-        <Grid size={{ xs: 12 }}>
-          <Controller
-            name="creditsRequired"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Créditos Requeridos"
-                type="number"
-                fullWidth
-                variant="outlined"
-                error={!!errors.creditsRequired}
-                helperText={errors.creditsRequired?.message}
-                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CreditCardIcon color="action" />
                     </InputAdornment>
                   ),
                 }}

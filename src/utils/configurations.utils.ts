@@ -6,6 +6,10 @@ export const getStatusColor = (status: string) => {
       return 'warning';
     case 'archived':
       return 'default';
+    case 'inactive':
+      return 'error';
+    case 'completed':
+      return 'info';
     default:
       return 'default';
   }
@@ -19,6 +23,10 @@ export const getStatusLabel = (status: string) => {
       return 'Cerrado';
     case 'archived':
       return 'Archivado';
+    case 'inactive':
+      return 'Inactivo';
+    case 'completed':
+      return 'Completado';
     default:
       return status;
   }
