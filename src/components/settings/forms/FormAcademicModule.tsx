@@ -19,10 +19,10 @@ import {
   List as ListIcon,
 } from '@mui/icons-material';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import type { TypeAcademicModuleCreate, TypeAcademicModule } from '../../types/academic-modules.types';
-import { academicModulesService } from '../../services/academic-modules.service';
-import { useGetAcademicCyles } from '../../hooks/useGetAcademicCyles';
-import type { TypeAcademicCycle } from '../../types/academic-cycles';
+import type { TypeAcademicModuleCreate, TypeAcademicModule } from '../../../types/academic-modules.types';
+import { academicModulesService } from '../../../services/academic-modules.service';
+import { useGetAcademicCyles } from '../../../hooks/useGetAcademicCyles';
+import type { TypeAcademicCycle } from '../../../types/academic-cycles';
 import toast from 'react-hot-toast';
 
 interface Props {

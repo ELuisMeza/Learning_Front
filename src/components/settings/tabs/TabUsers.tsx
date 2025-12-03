@@ -1,16 +1,14 @@
 import { useState } from "react";
-import { 
-  Box, 
-  TableRow, 
-  TableHead, 
-  Table, 
-  TableContainer, 
-  Button, 
-  Typography, 
-  TableCell, 
-  Chip, 
-  IconButton, 
-  TableBody, 
+import {
+  Box,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   InputAdornment,
   Pagination,
@@ -18,19 +16,23 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Chip,
+  IconButton,
 } from "@mui/material";
-import SearchIcon from '@mui/icons-material/Search';
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import SearchIcon from "@mui/icons-material/Search";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 import { TabPanel } from "./TabPanel";
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useGetClasses } from "../../hooks/useGetClasses";
-import { getStatusColor, getStatusLabel } from "../../utils/configurations.utils";
-import { useDebouncedSearch } from "../../hooks/useDebouncedSearch";
-import { ModalBase } from "../ModalBase";
-import { FormClasses } from "./FormClasses";
-import type { TypeClassWithPagination } from "../../types/class.types";
+import { useGetUsers } from "../../../hooks/useGetUsers";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
+import { getStatusColor, getStatusLabel } from "../../../utils/configurations.utils";
+import { ModalBase } from "../../ModalBase";
+import { FormUsers } from "../forms/FormUsers";
+import type { TypeUser } from "../../../types/user.types";
 
 interface Props {
   tabValue: number;
@@ -46,10 +48,9 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-
-export const TabClasses: React.FC<Props> = ({ tabValue }) => {
+export const TabUsers: React.FC<Props> = ({ tabValue }) => {
   const [openDialog, setOpenDialog] = useState(false);
-  const { classes, loading: loadingClasses, pagination, addClass, params, setParams } = useGetClasses();
+  const { users, loading, pagination, addUser, params, setParams } = useGetUsers();
   const { searchInput, setSearchInput } = useDebouncedSearch({
     initialValue: params.search,
     delay: 500,
@@ -60,28 +61,52 @@ export const TabClasses: React.FC<Props> = ({ tabValue }) => {
     setOpenDialog(false);
   };
 
-  const handleSuccess = (newClass: TypeClassWithPagination) => {
-    addClass(newClass);
+  const handleSuccess = (user: TypeUser) => {
+    addUser(user);
     setOpenDialog(false);
   };
-
+  
   return (
-    <TabPanel value={tabValue} index={3}>
+    <TabPanel value={tabValue} index={5}>
+      {/* Título y botones */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6">Gestión de Clases</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-        >
-          Crear Clase
-        </Button>
+        <Typography variant="h6">Lista de Usuarios</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+          >
+            Crear Usuario
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<UploadFileIcon />}
+            onClick={() => {
+              // TODO: Implementar importación
+            }}
+          >
+            Importar Excel
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<GetAppIcon />}
+            onClick={() => {
+              // TODO: Implementar exportación
+            }}
+          >
+            Exportar Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* Barra de búsqueda y filtros */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
-          placeholder="Buscar clases..."
+          placeholder="Buscar usuarios..."
           variant="outlined"
           size="small"
           value={searchInput}
@@ -110,66 +135,67 @@ export const TabClasses: React.FC<Props> = ({ tabValue }) => {
         </FormControl>
       </Box>
 
-      {loadingClasses ? (
+      {/* Tabla de usuarios */}
+      {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <Typography>Cargando clases...</Typography>
+          <Typography>Cargando usuarios...</Typography>
         </Box>
       ) : (
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Código</TableCell>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Módulo</TableCell>
-                <TableCell>Docente</TableCell>
-                <TableCell>Cupo</TableCell>
+                <TableCell>Nombre Completo</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Documento</TableCell>
+                <TableCell>Rol</TableCell>
+                <TableCell>Teléfono</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell>Fecha Creación</TableCell>
                 <TableCell align="right">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {classes.length === 0 ? (
+              {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
                       {params.search
-                        ? 'No se encontraron clases con ese criterio de búsqueda'
-                        : 'No hay clases registradas'}
+                        ? 'No se encontraron usuarios con ese criterio de búsqueda'
+                        : 'No hay usuarios registrados'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                classes.map((classItem) => (
-                  <TableRow key={classItem.id}>
+                users.map((user) => (
+                  <TableRow key={user.id}>
                     <TableCell>
                       <Typography variant="body2" fontWeight="medium">
-                        {classItem.code}
+                        {`${user.name} ${user.lastNameFather || ''} ${user.lastNameMother || ''}`.trim()}
                       </Typography>
                     </TableCell>
-                    <TableCell>{classItem.name}</TableCell>
-                    <TableCell>
-                      {classItem.moduleName || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {classItem.appellative || '-'}
-                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {classItem.maxStudents || '-'}
+                        {user.documentType} {user.documentNumber}
                       </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {user.role?.name || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {user.phone || '-'}
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={getStatusLabel(classItem.status)}
-                        color={getStatusColor(classItem.status) as any}
+                        label={getStatusLabel(user.status)}
+                        color={getStatusColor(user.status) as any}
                         size="small"
                       />
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(classItem.createdAt)}
+                        {formatDate(user.createdAt)}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
@@ -192,7 +218,7 @@ export const TabClasses: React.FC<Props> = ({ tabValue }) => {
       {pagination && pagination.totalPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} clases
+            Mostrando {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} usuarios
           </Typography>
           <Stack spacing={2}>
             <Pagination
@@ -211,14 +237,14 @@ export const TabClasses: React.FC<Props> = ({ tabValue }) => {
       {pagination && pagination.totalPages === 1 && pagination.total > 0 && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {pagination.total} {pagination.total === 1 ? 'clase' : 'clases'}
+            Mostrando {pagination.total} {pagination.total === 1 ? 'usuario' : 'usuarios'}
           </Typography>
         </Box>
       )}
 
-      {/* Diálogo: Crear Clase */}
-      <ModalBase open={openDialog} onClose={handleCloseDialog} title="Crear Nueva Clase" size="md">
-        <FormClasses onClose={handleCloseDialog} onSuccess={handleSuccess} />
+      {/* Diálogo: Crear Usuario */}
+      <ModalBase open={openDialog} onClose={handleCloseDialog} title="Crear Nuevo Usuario" size="md">
+        <FormUsers onClose={handleCloseDialog} onSuccess={handleSuccess} />
       </ModalBase>
     </TabPanel>
   );

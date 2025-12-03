@@ -1,16 +1,15 @@
-import { useState } from "react";
 import { 
+  Chip, 
+  IconButton, 
+  TableCell, 
+  Typography, 
   Box, 
+  Button, 
   TableRow, 
   TableHead, 
   Table, 
   TableContainer, 
-  Button, 
-  Typography, 
-  TableCell, 
-  Chip, 
-  IconButton, 
-  TableBody, 
+  TableBody,
   TextField,
   InputAdornment,
   Pagination,
@@ -20,17 +19,18 @@ import {
   FormControl,
   InputLabel
 } from "@mui/material";
-import SearchIcon from '@mui/icons-material/Search';
-import { TabPanel } from "./TabPanel";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useGetTeachers } from "../../hooks/useGetTeachers";
-import { getStatusColor, getStatusLabel } from "../../utils/configurations.utils";
-import { useDebouncedSearch } from "../../hooks/useDebouncedSearch";
-import { ModalBase } from "../ModalBase";
-import { FormTeacher } from "./FormTeacher";
-import type { TypeTeacher } from "../../types/teachers.types";
+import SearchIcon from '@mui/icons-material/Search';
+import { TabPanel } from "./TabPanel";
+import { useState } from "react";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
+import { useGetAcademicModules } from "../../../hooks/useGetAcademicModules";
+import { getStatusColor, getStatusLabel } from "../../../utils/configurations.utils";
+import { ModalBase } from "../../ModalBase";
+import { FormAcademicModule } from "../forms/FormAcademicModule";
+import type { TypeAcademicModule } from "../../../types/academic-modules.types";
 
 interface Props {
   tabValue: number;
@@ -46,18 +46,9 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-const getTeachingModeLabel = (mode: string) => {
-  const labels: Record<string, string> = {
-    in_person: 'Presencial',
-    online: 'En línea',
-    hybrid: 'Híbrido',
-  };
-  return labels[mode] || mode;
-};
-
-export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
+export const TabModules: React.FC<Props> = ({ tabValue }) => {
   const [openDialog, setOpenDialog] = useState(false);
-  const { teachers, loading: loadingTeachers, pagination, addTeacher, params, setParams } = useGetTeachers();
+  const { academicModules, loading: loadingAcademicModules, pagination, addAcademicModule, params, setParams } = useGetAcademicModules();
   const { searchInput, setSearchInput } = useDebouncedSearch({
     initialValue: params.search,
     delay: 500,
@@ -68,28 +59,28 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
     setOpenDialog(false);
   };
 
-  const handleSuccess = (newTeacher: TypeTeacher) => {
-    addTeacher(newTeacher);
+  const handleSuccess = (academicModule: TypeAcademicModule) => {
+    addAcademicModule(academicModule);
     setOpenDialog(false);
   };
 
   return (
-    <TabPanel value={tabValue} index={4}>
+    <TabPanel value={tabValue} index={2}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6">Gestión de Profesores</Typography>
+        <Typography variant="h6">Gestión de Módulos Académicos</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setOpenDialog(true)}
         >
-          Crear Profesor
+          Crear Módulo
         </Button>
       </Box>
 
       {/* Barra de búsqueda y filtros */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
-          placeholder="Buscar profesores..."
+          placeholder="Buscar módulos académicos..."
           variant="outlined"
           size="small"
           value={searchInput}
@@ -118,76 +109,69 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
         </FormControl>
       </Box>
 
-      {loadingTeachers ? (
+      {loadingAcademicModules ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <Typography>Cargando profesores...</Typography>
+          <Typography>Cargando módulos académicos...</Typography>
         </Box>
       ) : (
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Código</TableCell>
                 <TableCell>Nombre</TableCell>
-                <TableCell>Especialidad</TableCell>
-                <TableCell>Grado Académico</TableCell>
-                <TableCell>Años de Experiencia</TableCell>
-                <TableCell>Modo de Enseñanza</TableCell>
+                <TableCell>Ciclo</TableCell>
+                <TableCell>Descripción</TableCell>
+                <TableCell>Orden</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell>Fecha Creación</TableCell>
                 <TableCell align="right">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {teachers.length === 0 ? (
+              {academicModules.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
                       {params.search
-                        ? 'No se encontraron profesores con ese criterio de búsqueda'
-                        : 'No hay profesores registrados'}
+                        ? 'No se encontraron módulos académicos con ese criterio de búsqueda'
+                        : 'No hay módulos académicos registrados'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                teachers.map((teacher) => (
-                  <TableRow key={teacher.id}>
+                academicModules.map((academicModule) => (
+                  <TableRow key={academicModule.id}>
                     <TableCell>
                       <Typography variant="body2" fontWeight="medium">
-                        {teacher.appellative}
+                        {academicModule.code}
                       </Typography>
+                    </TableCell>
+                    <TableCell>{academicModule.name}</TableCell>
+                    <TableCell>
+                      {academicModule.cycleName || '-'}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">
-                        {teacher.specialty || '-'}
+                      <Typography variant="body2" color="text.secondary" sx={{ 
+                        maxWidth: 300, 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {academicModule.description || '-'}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {teacher.academicDegree || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {teacher.experienceYears || 0} {teacher.experienceYears === 1 ? 'año' : 'años'}
-                      </Typography>
-                    </TableCell>
+                    <TableCell>{academicModule.orderNumber}</TableCell>
                     <TableCell>
                       <Chip
-                        label={getTeachingModeLabel(teacher.teachingModes)}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={getStatusLabel(teacher.status)}
-                        color={getStatusColor(teacher.status) as any}
+                        label={getStatusLabel(academicModule.status)}
+                        color={getStatusColor(academicModule.status) as any}
                         size="small"
                       />
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(teacher.createdAt)}
+                        {formatDate(academicModule.createdAt)}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
@@ -210,7 +194,7 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
       {pagination && pagination.totalPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} profesores
+            Mostrando {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} módulos académicos
           </Typography>
           <Stack spacing={2}>
             <Pagination
@@ -229,14 +213,14 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
       {pagination && pagination.totalPages === 1 && pagination.total > 0 && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {pagination.total} {pagination.total === 1 ? 'profesor' : 'profesores'}
+            Mostrando {pagination.total} {pagination.total === 1 ? 'módulo académico' : 'módulos académicos'}
           </Typography>
         </Box>
       )}
 
-      {/* Diálogo: Crear Profesor */}
-      <ModalBase open={openDialog} onClose={handleCloseDialog} title="Crear Nuevo Profesor" size="md">
-        <FormTeacher onClose={handleCloseDialog} onSuccess={handleSuccess} />
+      {/* Diálogo: Crear Módulo Académico */}
+      <ModalBase open={openDialog} onClose={handleCloseDialog} title="Crear Nuevo Módulo Académico" size="md">
+        <FormAcademicModule onClose={handleCloseDialog} onSuccess={handleSuccess} />
       </ModalBase>
     </TabPanel>
   );

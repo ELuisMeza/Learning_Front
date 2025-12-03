@@ -17,3 +17,23 @@ export interface TypeUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export type GenderType = 'male' | 'female' | 'other';
+
+export interface TypeUserCreate {
+  documentType?: string;
+  documentNumber?: string;
+  email: string;
+  password: string;
+  roleId: string;
+  name: string;
+  lastNameFather: string;
+  lastNameMother?: string;
+  gender: GenderType;
+  birthdate: string;
+  phone?: string;
+}
+
+
+
+

@@ -24,13 +24,13 @@ import {
   Group as GroupIcon,
 } from '@mui/icons-material';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import type { TypeCreateClass, TypeClassWithPagination } from '../../types/class.types';
-import { classService } from '../../services/class.service';
-import { useGetAcademicModules } from '../../hooks/useGetAcademicModules';
-import { useGetTeachers } from '../../hooks/useGetTeachers';
-import type { TypeAcademicModule } from '../../types/academic-modules.types';
-import type { TypeTeacher } from '../../types/teachers.types';
-import type { TypeModality } from '../../lib/globals';
+import type { TypeCreateClass, TypeClassWithPagination } from '../../../types/class.types';
+import { classService } from '../../../services/class.service';
+import { useGetAcademicModules } from '../../../hooks/useGetAcademicModules';
+import { useGetTeachers } from '../../../hooks/useGetTeachers';
+import type { TypeAcademicModule } from '../../../types/academic-modules.types';
+import type { TypeTeacher } from '../../../types/teachers.types';
+import type { TypeModality } from '../../../lib/globals';
 import toast from 'react-hot-toast';
 
 interface Props {

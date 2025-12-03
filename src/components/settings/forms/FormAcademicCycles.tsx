@@ -21,10 +21,10 @@ import {
   List as ListIcon,
 } from '@mui/icons-material';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import type { TypeCreateAcademicCycle, TypeAcademicCycle } from '../../types/academic-cycles';
-import { academicCyclesService } from '../../services/academic-cycles.service';
-import { useGetCarrers } from '../../hooks/useGetCarrers';
-import type { TypeCareer } from '../../types/carrers.types';
+import type { TypeCreateAcademicCycle, TypeAcademicCycle } from '../../../types/academic-cycles';
+import { academicCyclesService } from '../../../services/academic-cycles.service';
+import { useGetCarrers } from '../../../hooks/useGetCarrers';
+import type { TypeCareer } from '../../../types/carrers.types';
 import toast from 'react-hot-toast';
 
 interface Props {

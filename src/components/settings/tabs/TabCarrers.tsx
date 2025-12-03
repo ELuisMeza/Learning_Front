@@ -25,12 +25,12 @@ import { TabPanel } from "./TabPanel";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useGetCarrers } from "../../hooks/useGetCarrers";
-import { getStatusColor, getStatusLabel } from "../../utils/configurations.utils";
-import { FormCarrer } from "./FormCarrer";
-import type { TypeCareer } from "../../types/carrers.types";
-import { useDebouncedSearch } from "../../hooks/useDebouncedSearch";
-import { ModalBase } from "../ModalBase";
+import { useGetCarrers } from "../../../hooks/useGetCarrers";
+import { getStatusColor, getStatusLabel } from "../../../utils/configurations.utils";
+import { FormCarrer } from "../forms/FormCarrer";
+import type { TypeCareer } from "../../../types/carrers.types";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
+import { ModalBase } from "../../ModalBase";
 
 interface Props {
   tabValue: number;

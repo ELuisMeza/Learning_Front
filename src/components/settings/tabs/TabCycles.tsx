@@ -25,12 +25,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabPanel } from "./TabPanel";
 import { useState } from "react";
-import { useDebouncedSearch } from "../../hooks/useDebouncedSearch";
-import { useGetAcademicCyles } from "../../hooks/useGetAcademicCyles";
-import type { TypeAcademicCycle } from "../../types/academic-cycles";
-import { getStatusColor, getStatusLabel } from "../../utils/configurations.utils";
-import { ModalBase } from "../ModalBase";
-import { FormAcademicCycles } from "./FormAcademicCycles";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
+import { useGetAcademicCyles } from "../../../hooks/useGetAcademicCyles";
+import type { TypeAcademicCycle } from "../../../types/academic-cycles";
+import { getStatusColor, getStatusLabel } from "../../../utils/configurations.utils";
+import { ModalBase } from "../../ModalBase";
+import { FormAcademicCycles } from "../forms/FormAcademicCycles";
 
 interface Props {
   tabValue: number;

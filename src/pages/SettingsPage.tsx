@@ -5,24 +5,18 @@ import {
   Paper,
   Tabs,
   Tab,
-  Button,
-  Alert,
-  Card,
-  CardContent,
 } from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BookIcon from '@mui/icons-material/Book';
 import ClassIcon from '@mui/icons-material/Class';  
 import PersonIcon from '@mui/icons-material/Person';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SchoolIcon from '@mui/icons-material/School';
-import { TabPanel } from '../components/settings/TabPanel';
-import { TabCarrers } from '../components/settings/TabCarrers';
-import { TabCycles } from '../components/settings/TabCycles';
-import { TabModules } from '../components/settings/TabModules';
-import { TabClasses } from '../components/settings/TabClasses';
-import { TabTeachers } from '../components/settings/TabTeachers';
+import { TabCarrers } from '../components/settings/tabs/TabCarrers';
+import { TabCycles } from '../components/settings/tabs/TabCycles';
+import { TabModules } from '../components/settings/tabs/TabModules';
+import { TabTeachers } from '../components/settings/tabs/TabTeachers';
+import { TabClasses } from '../components/settings/tabs/TabClasses';
+import { TabUsers } from '../components/settings/tabs/TabUsers';
 
 const SettingsPage = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -53,7 +47,7 @@ const SettingsPage = () => {
           <Tab icon={<BookIcon />} iconPosition="start" label="Módulos" />
           <Tab icon={<ClassIcon />} iconPosition="start" label="Clases" />
           <Tab icon={<PersonIcon />} iconPosition="start" label="Docentes" />
-          <Tab icon={<CloudUploadIcon />} iconPosition="start" label="Importación Masiva" />
+          <Tab icon={<PersonIcon />} iconPosition="start" label="Estudiantes" />
         </Tabs>
 
         
@@ -83,47 +77,9 @@ const SettingsPage = () => {
         )}
 
         {/* Tab 6: Importación Masiva */}
-        <TabPanel value={tabValue} index={5}>
-          <Typography variant="h6" sx={{ mb: 3 }}>Importación Masiva de Usuarios</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, mb: 3 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <UploadFileIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-                  <Typography variant="h6">CSV</Typography>
-                  <Button variant="outlined" startIcon={<UploadFileIcon />}>
-                    Subir CSV
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <UploadFileIcon sx={{ fontSize: 48, color: 'success.main' }} />
-                  <Typography variant="h6">Excel</Typography>
-                  <Button variant="outlined" color="success" startIcon={<UploadFileIcon />}>
-                    Subir Excel
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <CloudUploadIcon sx={{ fontSize: 48, color: 'info.main' }} />
-                  <Typography variant="h6">Google Workspace</Typography>
-                  <Button variant="outlined" color="info" startIcon={<CloudUploadIcon />}>
-                    Conectar Google
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-          <Alert severity="info">
-            Formatos soportados: CSV, Excel (.xlsx, .xls). El archivo debe contener columnas: nombre, apellidos, email, rol, documento.
-          </Alert>
-        </TabPanel>
+        {tabValue === 5 && (
+          <TabUsers tabValue={tabValue} />
+        )}
       </Paper>
     </Box>
   );

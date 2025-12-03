@@ -20,8 +20,8 @@ import {
   Schedule as ScheduleIcon,
   Stars as StarsIcon,
 } from '@mui/icons-material';
-import type { TypeCreateCareer, TypeCareer } from '../../types/carrers.types';
-import { careersService } from '../../services/carres.service';
+import type { TypeCreateCareer, TypeCareer } from '../../../types/carrers.types';
+import { careersService } from '../../../services/carres.service';
 import toast from 'react-hot-toast';
 
 interface Props {

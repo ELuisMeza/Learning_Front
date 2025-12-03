@@ -236,19 +236,19 @@ export const AdministratorView = () => {
           ) : stadistics?.teachers.teachers.byTeachingMode.length ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {stadistics.teachers.teachers.byTeachingMode.map((item) => (
-                <Box key={item.teachingModes} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box key={item.TypeModality} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {item.teachingModes === 'in_person' && <HomeIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
-                    {item.teachingModes === 'online' && <ComputerIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
-                    {item.teachingModes === 'hybrid' && <SchoolIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
-                    <Typography variant="body2">{getTeachingModeLabel(item.teachingModes)}</Typography>
+                    {item.TypeModality === 'in_person' && <HomeIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
+                    {item.TypeModality === 'online' && <ComputerIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
+                    {item.TypeModality === 'hybrid' && <SchoolIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
+                    <Typography variant="body2">{getTeachingModeLabel(item.TypeModality)}</Typography>
                   </Box>
                   <Chip
                     label={item.count}
                     size="small"
                     sx={{
-                      backgroundColor: `${getTeachingModeColor(item.teachingModes)}20`,
-                      color: getTeachingModeColor(item.teachingModes),
+                      backgroundColor: `${getTeachingModeColor(item.TypeModality)}20`,
+                      color: getTeachingModeColor(item.TypeModality),
                       fontWeight: 'bold',
                     }}
                   />
