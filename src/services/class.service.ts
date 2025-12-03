@@ -1,6 +1,5 @@
 import apiService from './apiService';
-import type { TypeClass, TypeClassDetails, TypeClassStudent, TypeClassWithPagination, TypeCreateClass } from '../types/class.types';
-import type { TypeParamsGet } from '../types/utils.types';
+import type { TypeClass, TypeClassDetails, TypeClassStudent, TypeClassWithPagination, TypeCreateClass, TypeGetClassesParams } from '../types/class.types';
 import type { PaginatedResponse } from '../types/utils.types';
 
 const baseUrl = '/classes';
@@ -56,7 +55,7 @@ export const classService = {
     }));
   },
 
-  getAllWithPagination: async (params: TypeParamsGet) => {
+  getAllWithPagination: async (params: TypeGetClassesParams) => {
     try {
       const response = await apiService.post<PaginatedResponse<TypeClassWithPagination>>(`${baseUrl}/get-all`, params);
       return { success: true, data: response.data, message: 'Clases obtenidas exitosamente' };

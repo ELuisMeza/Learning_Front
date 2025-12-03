@@ -33,20 +33,12 @@ import { getStatusColor, getStatusLabel } from "../../../utils/configurations.ut
 import { ModalBase } from "../../ModalBase";
 import { FormUsers } from "../forms/FormUsers";
 import type { TypeUser } from "../../../types/user.types";
+import { TypeStatus } from "../../../lib/globals";
+import { formatDate } from "../../../utils/formatDate";
 
 interface Props {
   tabValue: number;
 }
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
 
 export const TabUsers: React.FC<Props> = ({ tabValue }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -120,6 +112,18 @@ export const TabUsers: React.FC<Props> = ({ tabValue }) => {
           }}
           sx={{ flexGrow: 1, minWidth: 250 }}
         />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            value={params.status || ''}
+            label="Estado"
+            onChange={(e) => setParams({ status: (e.target.value || undefined) as TypeStatus | undefined })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value={TypeStatus.ACTIVE}>Activo</MenuItem>
+            <MenuItem value={TypeStatus.INACTIVE}>Inactivo</MenuItem>
+          </Select>
+        </FormControl>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Por página</InputLabel>
           <Select
@@ -148,7 +152,6 @@ export const TabUsers: React.FC<Props> = ({ tabValue }) => {
                 <TableCell>Nombre Completo</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Documento</TableCell>
-                <TableCell>Rol</TableCell>
                 <TableCell>Teléfono</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell>Fecha Creación</TableCell>
@@ -160,8 +163,8 @@ export const TabUsers: React.FC<Props> = ({ tabValue }) => {
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
-                      {params.search
-                        ? 'No se encontraron usuarios con ese criterio de búsqueda'
+                      {params.search || params.status
+                        ? 'No se encontraron usuarios con los filtros aplicados'
                         : 'No hay usuarios registrados'}
                     </Typography>
                   </TableCell>
@@ -179,9 +182,6 @@ export const TabUsers: React.FC<Props> = ({ tabValue }) => {
                       <Typography variant="body2">
                         {user.documentType} {user.documentNumber}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {user.role?.name || '-'}
                     </TableCell>
                     <TableCell>
                       {user.phone || '-'}

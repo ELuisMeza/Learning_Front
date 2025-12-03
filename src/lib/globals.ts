@@ -1,7 +1,6 @@
 export const TypeGender = {
   MALE: 'male',
   FEMALE: 'female',
-  OTHER: 'other',
 } as const;
 
 export type TypeGender = typeof TypeGender[keyof typeof TypeGender];
@@ -21,3 +20,18 @@ export const TypeEvaluationMode = {
 } as const;
 
 export type TypeEvaluationMode = typeof TypeEvaluationMode[keyof typeof TypeEvaluationMode];
+
+export const TypeStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const;
+
+export type TypeStatus = typeof TypeStatus[keyof typeof TypeStatus];
+
+export const TypeDocumentType = {
+  DNI: 'DNI',
+  CE: 'CE',
+  PASSPORT: 'PASSPORT',
+} as const;
+
+export type TypeDocumentType = typeof TypeDocumentType[keyof typeof TypeDocumentType];

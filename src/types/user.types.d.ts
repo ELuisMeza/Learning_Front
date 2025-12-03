@@ -1,3 +1,7 @@
+import type { TypeParamsGet } from "./utils.types";
+import type { TypeRole } from "./role.types";
+import type { TypeStatus, TypeGender } from "../lib/globals";
+
 export interface TypeUser {
   id: string;
   name: string;
@@ -18,22 +22,20 @@ export interface TypeUser {
   updatedAt: string;
 }
 
-export type GenderType = 'male' | 'female' | 'other';
-
 export interface TypeUserCreate {
   documentType?: string;
   documentNumber?: string;
   email: string;
   password: string;
-  roleId: string;
   name: string;
   lastNameFather: string;
   lastNameMother?: string;
-  gender: GenderType;
+  gender: TypeGender;
   birthdate: string;
   phone?: string;
 }
 
-
-
+export interface TypeGetUsersParams extends TypeParamsGet {
+  status?: TypeStatus;
+}
 

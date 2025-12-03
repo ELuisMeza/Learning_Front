@@ -1,11 +1,11 @@
-import type { TypeCareer, TypeCreateCareer } from "../types/carrers.types";
-import type { TypeParamsGet, PaginatedResponse } from "../types/utils.types";
+import type { TypeCareer, TypeCreateCareer, TypeGetCareersParams } from "../types/carrers.types";
+import type { PaginatedResponse } from "../types/utils.types";
 import apiService from "./apiService";
 
 const baseUrl = '/careers';
 
 export const careersService = {
-  getCareers: async (params: TypeParamsGet) => {
+  getCareers: async (params: TypeGetCareersParams): Promise<{ success: boolean, data?: PaginatedResponse<TypeCareer>, message: string, error?: any }> => {
     try {
       const response = await apiService.post<PaginatedResponse<TypeCareer>>(`${baseUrl}/get-all`, params);
       return { success: true, data: response.data, message: 'Carreras obtenidas correctamente' };

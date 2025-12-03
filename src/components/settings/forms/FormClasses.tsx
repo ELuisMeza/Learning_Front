@@ -23,14 +23,14 @@ import {
   Book as BookIcon,
   Group as GroupIcon,
 } from '@mui/icons-material';
-import { useEffect, useState, useCallback, useRef } from 'react';
 import type { TypeCreateClass, TypeClassWithPagination } from '../../../types/class.types';
 import { classService } from '../../../services/class.service';
 import { useGetAcademicModules } from '../../../hooks/useGetAcademicModules';
 import { useGetTeachers } from '../../../hooks/useGetTeachers';
-import type { TypeAcademicModule } from '../../../types/academic-modules.types';
-import type { TypeTeacher } from '../../../types/teachers.types';
+import { TypeStatus } from '../../../lib/globals';
 import type { TypeModality } from '../../../lib/globals';
+import { generateRandomCode } from '../../../utils/generateRandomCode';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -60,42 +60,32 @@ const schema = yup.object({
 });
 
 export const FormClasses = ({ onClose, onSuccess }: Props) => {
-  // Estados para módulos académicos
-  const [allModules, setAllModules] = useState<TypeAcademicModule[]>([]);
-  const [moduleSearchInput, setModuleSearchInput] = useState('');
-  const moduleLoadingMoreRef = useRef(false);
-  const moduleSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const moduleIsSelectingRef = useRef(false);
-  const moduleLastSearchRef = useRef<string>('');
+  // Hooks para obtener datos (primeras 1000)
+  const { 
+    academicModules: modulesForFilter, 
+    loading: loadingModules
+  } = useGetAcademicModules({
+    page: 1,
+    limit: 1000,
+    search: '',
+    status: TypeStatus.ACTIVE,
+  });
 
-  // Estados para profesores
-  const [allTeachers, setAllTeachers] = useState<TypeTeacher[]>([]);
-  const [teacherSearchInput, setTeacherSearchInput] = useState('');
-  const teacherLoadingMoreRef = useRef(false);
-  const teacherSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const teacherIsSelectingRef = useRef(false);
-  const teacherLastSearchRef = useRef<string>('');
-
-  const {
-    academicModules,
-    loading: loadingModules,
-    pagination: modulesPagination,
-    params: modulesParams,
-    setParams: setModulesParams,
-  } = useGetAcademicModules();
-
-  const {
-    teachers,
-    loading: loadingTeachers,
-    pagination: teachersPagination,
-    params: teachersParams,
-    setParams: setTeachersParams,
-  } = useGetTeachers();
+  const { 
+    teachers: teachersForFilter, 
+    loading: loadingTeachers
+  } = useGetTeachers({
+    page: 1,
+    limit: 1000,
+    search: '',
+  });
 
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<TypeCreateClass>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -110,140 +100,15 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
     },
   });
 
-  // Manejar búsqueda de módulos con debounce
-  useEffect(() => {
-    if (moduleIsSelectingRef.current) {
-      return;
-    }
+  const selectedModuleId = watch('moduleId');
+  const selectedTeacherId = watch('teacherId');
+  const selectedModule = modulesForFilter.find((m) => m.id === selectedModuleId) || null;
+  const selectedTeacher = teachersForFilter.find((t) => t.id === selectedTeacherId) || null;
 
-    if (moduleLastSearchRef.current === moduleSearchInput) {
-      return;
-    }
-
-    if (modulesParams.search === moduleSearchInput) {
-      moduleLastSearchRef.current = moduleSearchInput;
-      return;
-    }
-
-    if (moduleSearchTimeoutRef.current) {
-      clearTimeout(moduleSearchTimeoutRef.current);
-    }
-
-    moduleSearchTimeoutRef.current = setTimeout(() => {
-      if (moduleLastSearchRef.current !== moduleSearchInput && !moduleIsSelectingRef.current) {
-        moduleLastSearchRef.current = moduleSearchInput;
-        setModulesParams({ search: moduleSearchInput, page: 1 });
-        setAllModules([]);
-      }
-    }, 500);
-
-    return () => {
-      if (moduleSearchTimeoutRef.current) {
-        clearTimeout(moduleSearchTimeoutRef.current);
-      }
-    };
-  }, [moduleSearchInput, modulesParams.search, setModulesParams]);
-
-  // Acumular módulos académicos activos
-  useEffect(() => {
-    const activeModules = academicModules.filter((module) => module.status === 'active');
-
-    if (modulesParams.page === 1) {
-      setAllModules(activeModules);
-    } else {
-      setAllModules((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const newModules = activeModules.filter((m) => !existingIds.has(m.id));
-        return [...prev, ...newModules];
-      });
-    }
-    moduleLoadingMoreRef.current = false;
-  }, [academicModules, modulesParams.page]);
-
-  // Cargar más módulos cuando se hace scroll
-  const loadMoreModules = useCallback(() => {
-    if (
-      !loadingModules &&
-      !moduleLoadingMoreRef.current &&
-      modulesPagination &&
-      modulesPagination.page < modulesPagination.totalPages
-    ) {
-      moduleLoadingMoreRef.current = true;
-      setModulesParams({ page: modulesPagination.page + 1 });
-    }
-  }, [loadingModules, modulesPagination, setModulesParams]);
-
-  // Manejar búsqueda de profesores con debounce
-  useEffect(() => {
-    if (teacherIsSelectingRef.current) {
-      return;
-    }
-
-    if (teacherLastSearchRef.current === teacherSearchInput) {
-      return;
-    }
-
-    if (teachersParams.search === teacherSearchInput) {
-      teacherLastSearchRef.current = teacherSearchInput;
-      return;
-    }
-
-    if (teacherSearchTimeoutRef.current) {
-      clearTimeout(teacherSearchTimeoutRef.current);
-    }
-
-    teacherSearchTimeoutRef.current = setTimeout(() => {
-      if (teacherLastSearchRef.current !== teacherSearchInput && !teacherIsSelectingRef.current) {
-        teacherLastSearchRef.current = teacherSearchInput;
-        setTeachersParams({ search: teacherSearchInput, page: 1 });
-        setAllTeachers([]);
-      }
-    }, 500);
-
-    return () => {
-      if (teacherSearchTimeoutRef.current) {
-        clearTimeout(teacherSearchTimeoutRef.current);
-      }
-    };
-  }, [teacherSearchInput, teachersParams.search, setTeachersParams]);
-
-  // Acumular profesores activos
-  useEffect(() => {
-    const activeTeachers = teachers.filter((teacher) => teacher.status === 'active');
-
-    if (teachersParams.page === 1) {
-      setAllTeachers(activeTeachers);
-    } else {
-      setAllTeachers((prev) => {
-        const existingIds = new Set(prev.map((t) => t.id));
-        const newTeachers = activeTeachers.filter((t) => !existingIds.has(t.id));
-        return [...prev, ...newTeachers];
-      });
-    }
-    teacherLoadingMoreRef.current = false;
-  }, [teachers, teachersParams.page]);
-
-  // Cargar más profesores cuando se hace scroll
-  const loadMoreTeachers = useCallback(() => {
-    if (
-      !loadingTeachers &&
-      !teacherLoadingMoreRef.current &&
-      teachersPagination &&
-      teachersPagination.page < teachersPagination.totalPages
-    ) {
-      teacherLoadingMoreRef.current = true;
-      setTeachersParams({ page: teachersPagination.page + 1 });
-    }
-  }, [loadingTeachers, teachersPagination, setTeachersParams]);
-
-  // Cargar datos iniciales al montar
-  useEffect(() => {
-    moduleLastSearchRef.current = '';
-    setModulesParams({ page: 1, limit: 20, search: '' });
-    teacherLastSearchRef.current = '';
-    setTeachersParams({ page: 1, limit: 20, search: '' });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleGenerateCode = () => {
+    const randomCode = generateRandomCode();
+    setValue('code', randomCode);
+  };
 
   const onSubmit = async (data: TypeCreateClass) => {
     try {
@@ -263,69 +128,36 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)}>
       <Grid container spacing={2} paddingTop={2}>
-        {/* Módulo Académico */}
+        {/* Módulo Académico - ComboBox */}
         <Grid size={{ xs: 12 }}>
           <Controller
             name="moduleId"
             control={control}
-            render={({ field: { onChange, value, ...field } }) => (
+            render={({ field: { onChange } }) => (
               <FormControl fullWidth error={!!errors.moduleId}>
                 <Autocomplete
-                  {...field}
-                  options={allModules}
-                  getOptionLabel={(option) =>
-                    typeof option === 'string' ? option : `${option.name} (${option.code})`
-                  }
-                  isOptionEqualToValue={(option, val) => option.id === val.id}
-                  value={allModules.find((m) => m.id === value) || null}
+                  options={modulesForFilter}
+                  getOptionLabel={(option) => option.name || ''}
+                  value={selectedModule}
                   onChange={(_, newValue) => {
-                    moduleIsSelectingRef.current = true;
                     onChange(newValue ? newValue.id : '');
-                    if (newValue) {
-                      const selectedText = `${newValue.name} (${newValue.code})`;
-                      setModuleSearchInput(selectedText);
-                      moduleLastSearchRef.current = selectedText;
-                    } else {
-                      setModuleSearchInput('');
-                      moduleLastSearchRef.current = '';
-                    }
-                    setTimeout(() => {
-                      moduleIsSelectingRef.current = false;
-                    }, 200);
                   }}
-                  loading={loadingModules && modulesParams.page === 1}
-                  onInputChange={(_, newInputValue, reason) => {
-                    if (reason === 'input') {
-                      moduleIsSelectingRef.current = false;
-                      setModuleSearchInput(newInputValue);
-                    } else if (reason === 'clear') {
-                      moduleIsSelectingRef.current = false;
-                      setModuleSearchInput('');
-                      moduleLastSearchRef.current = '';
-                    }
-                  }}
-                  inputValue={moduleSearchInput}
-                  ListboxProps={{
-                    onScroll: (event: React.SyntheticEvent) => {
-                      const listboxNode = event.currentTarget;
-                      if (
-                        listboxNode.scrollTop + listboxNode.clientHeight >=
-                        listboxNode.scrollHeight - 10
-                      ) {
-                        loadMoreModules();
-                      }
-                    },
-                    style: { maxHeight: '300px' },
-                  }}
-                  renderInput={(textFieldParams) => (
+                  loading={loadingModules}
+                  filterOptions={(options, { inputValue }) =>
+                    options.filter((option) =>
+                      option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+                      option.code.toLowerCase().includes(inputValue.toLowerCase())
+                    )
+                  }
+                  renderInput={(params) => (
                     <TextField
-                      {...textFieldParams}
+                      {...params}
                       label="Módulo Académico"
-                      placeholder="Buscar módulo académico..."
+                      placeholder="Seleccionar módulo académico..."
                       error={!!errors.moduleId}
                       helperText={errors.moduleId?.message}
                       InputProps={{
-                        ...textFieldParams.InputProps,
+                        ...params.InputProps,
                         startAdornment: (
                           <InputAdornment position="start">
                             <BookIcon color="action" />
@@ -333,10 +165,8 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
                         ),
                         endAdornment: (
                           <>
-                            {loadingModules && modulesParams.page === 1 ? (
-                              <CircularProgress color="inherit" size={20} />
-                            ) : null}
-                            {textFieldParams.InputProps.endAdornment}
+                            {loadingModules ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
                           </>
                         ),
                       }}
@@ -345,7 +175,9 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
                   renderOption={(props, option) => (
                     <Box component="li" {...props} key={option.id}>
                       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body1">{option.name}</Typography>
+                        <Typography variant="body2">
+                          {option.name}
+                        </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {option.code} - {option.cycleName}
                         </Typography>
@@ -361,68 +193,36 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
           />
         </Grid>
 
-        {/* Profesor */}
+        {/* Profesor - ComboBox */}
         <Grid size={{ xs: 12 }}>
           <Controller
             name="teacherId"
             control={control}
-            render={({ field: { onChange, value, ...field } }) => (
+            render={({ field: { onChange } }) => (
               <FormControl fullWidth error={!!errors.teacherId}>
                 <Autocomplete
-                  {...field}
-                  options={allTeachers}
-                  getOptionLabel={(option) =>
-                    typeof option === 'string' ? option : option.appellative
-                  }
-                  isOptionEqualToValue={(option, val) => option.id === val.id}
-                  value={allTeachers.find((t) => t.id === value) || null}
+                  options={teachersForFilter}
+                  getOptionLabel={(option) => option.appellative || ''}
+                  value={selectedTeacher}
                   onChange={(_, newValue) => {
-                    teacherIsSelectingRef.current = true;
                     onChange(newValue ? newValue.id : '');
-                    if (newValue) {
-                      setTeacherSearchInput(newValue.appellative);
-                      teacherLastSearchRef.current = newValue.appellative;
-                    } else {
-                      setTeacherSearchInput('');
-                      teacherLastSearchRef.current = '';
-                    }
-                    setTimeout(() => {
-                      teacherIsSelectingRef.current = false;
-                    }, 200);
                   }}
-                  loading={loadingTeachers && teachersParams.page === 1}
-                  onInputChange={(_, newInputValue, reason) => {
-                    if (reason === 'input') {
-                      teacherIsSelectingRef.current = false;
-                      setTeacherSearchInput(newInputValue);
-                    } else if (reason === 'clear') {
-                      teacherIsSelectingRef.current = false;
-                      setTeacherSearchInput('');
-                      teacherLastSearchRef.current = '';
-                    }
-                  }}
-                  inputValue={teacherSearchInput}
-                  ListboxProps={{
-                    onScroll: (event: React.SyntheticEvent) => {
-                      const listboxNode = event.currentTarget;
-                      if (
-                        listboxNode.scrollTop + listboxNode.clientHeight >=
-                        listboxNode.scrollHeight - 10
-                      ) {
-                        loadMoreTeachers();
-                      }
-                    },
-                    style: { maxHeight: '300px' },
-                  }}
-                  renderInput={(textFieldParams) => (
+                  loading={loadingTeachers}
+                  filterOptions={(options, { inputValue }) =>
+                    options.filter((option) =>
+                      option.appellative.toLowerCase().includes(inputValue.toLowerCase()) ||
+                      option.email.toLowerCase().includes(inputValue.toLowerCase())
+                    )
+                  }
+                  renderInput={(params) => (
                     <TextField
-                      {...textFieldParams}
+                      {...params}
                       label="Profesor"
-                      placeholder="Buscar profesor..."
+                      placeholder="Seleccionar profesor..."
                       error={!!errors.teacherId}
                       helperText={errors.teacherId?.message}
                       InputProps={{
-                        ...textFieldParams.InputProps,
+                        ...params.InputProps,
                         startAdornment: (
                           <InputAdornment position="start">
                             <PersonIcon color="action" />
@@ -430,10 +230,8 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
                         ),
                         endAdornment: (
                           <>
-                            {loadingTeachers && teachersParams.page === 1 ? (
-                              <CircularProgress color="inherit" size={20} />
-                            ) : null}
-                            {textFieldParams.InputProps.endAdornment}
+                            {loadingTeachers ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
                           </>
                         ),
                       }}
@@ -441,10 +239,19 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
                   )}
                   renderOption={(props, option) => (
                     <Box component="li" {...props} key={option.id}>
-                      <Typography variant="body1">{option.appellative}</Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant="body2">
+                          {option.appellative}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {option.email}
+                        </Typography>
+                      </Box>
                     </Box>
                   )}
-                  noOptionsText={loadingTeachers ? 'Cargando...' : 'No se encontraron profesores'}
+                  noOptionsText={
+                    loadingTeachers ? 'Cargando...' : 'No se encontraron profesores'
+                  }
                 />
               </FormControl>
             )}
@@ -470,6 +277,19 @@ export const FormClasses = ({ onClose, onSuccess }: Props) => {
                   startAdornment: (
                     <InputAdornment position="start">
                       <NumbersIcon color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Button
+                        size="small"
+                        onClick={handleGenerateCode}
+                        startIcon={<RefreshIcon />}
+                        variant="outlined"
+                        sx={{ minWidth: 'auto', px: 1 }}
+                      >
+                        Generar
+                      </Button>
                     </InputAdornment>
                   ),
                 }}

@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PaginationInfo, TypeParamsGet } from "../types/utils.types";
+import type { PaginationInfo } from "../types/utils.types";
 import toast from "react-hot-toast";
-import type { TypeClassWithPagination } from "../types/class.types";
+import type { TypeClassWithPagination, TypeGetClassesParams } from "../types/class.types";
 import { classService } from "../services/class.service";
 
 export const useGetClasses = () => {
   const [classes, setClasses] = useState<TypeClassWithPagination[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [params, setParams] = useState<TypeParamsGet>({
+  const [params, setParams] = useState<TypeGetClassesParams>({
     page: 1,
     limit: 10,
     search: '',
@@ -36,11 +36,11 @@ export const useGetClasses = () => {
     }
   };
 
-  const updateParams = (newParams: Partial<TypeParamsGet>) => {
+  const updateParams = (newParams: Partial<TypeGetClassesParams>) => {
     setParams((prev) => {
       const updated = { ...prev, ...newParams };
-      // Si cambia el search, resetear a página 1
-      if (newParams.search !== undefined) {
+      // Si cambia el search, status, moduleId, teacherId o typeTeaching, resetear a página 1
+      if (newParams.search !== undefined || newParams.status !== undefined || newParams.moduleId !== undefined || newParams.teacherId !== undefined || newParams.typeTeaching !== undefined) {
         updated.page = 1;
       }
       return updated;

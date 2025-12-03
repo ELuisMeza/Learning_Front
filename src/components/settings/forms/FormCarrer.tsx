@@ -23,6 +23,9 @@ import {
 import type { TypeCreateCareer, TypeCareer } from '../../../types/carrers.types';
 import { careersService } from '../../../services/carres.service';
 import toast from 'react-hot-toast';
+import { TypeModality } from '../../../lib/globals';
+import { generateRandomCode } from '../../../utils/generateRandomCode';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 interface Props {
   onClose: () => void;
@@ -56,6 +59,7 @@ export const FormCarrer = ({ onClose, onSuccess }: Props) => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TypeCreateCareer>({
     resolver: yupResolver(schema),
@@ -64,11 +68,16 @@ export const FormCarrer = ({ onClose, onSuccess }: Props) => {
       name: '',
       description: '',
       degreeTitle: '',
-      modality: 'hybrid',
+      modality: TypeModality.HYBRID,
       durationYears: 4,
       totalCredits: 120,
     },
   });
+
+  const handleGenerateCode = () => {
+    const randomCode = generateRandomCode();
+    setValue('code', randomCode);
+  };
 
   const onSubmit = async (data: TypeCreateCareer) => {
     try {
@@ -103,6 +112,21 @@ export const FormCarrer = ({ onClose, onSuccess }: Props) => {
                 variant="outlined"
                 error={!!errors.code}
                 helperText={errors.code?.message}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Button
+                        size="small"
+                        onClick={handleGenerateCode}
+                        startIcon={<RefreshIcon />}
+                        variant="outlined"
+                        sx={{ minWidth: 'auto', px: 1 }}
+                      >
+                        Generar
+                      </Button>
+                    </InputAdornment>
+                  ),
+                }}
               />
             )}
           />
@@ -200,9 +224,9 @@ export const FormCarrer = ({ onClose, onSuccess }: Props) => {
                   {...field}
                   label="Modalidad"
                 >
-                  <MenuItem value="hybrid">Híbrida</MenuItem>
-                  <MenuItem value="in_person">Presencial</MenuItem>
-                  <MenuItem value="online">En línea</MenuItem>
+                  <MenuItem value={TypeModality.HYBRID}>Híbrida</MenuItem>
+                  <MenuItem value={TypeModality.IN_PERSON}>Presencial</MenuItem>
+                  <MenuItem value={TypeModality.ONLINE}>En línea</MenuItem>
                 </Select>
                 {errors.modality && (
                   <FormHelperText>{errors.modality.message}</FormHelperText>

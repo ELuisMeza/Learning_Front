@@ -17,7 +17,9 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Autocomplete,
+  CircularProgress
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -31,20 +33,13 @@ import type { TypeAcademicCycle } from "../../../types/academic-cycles";
 import { getStatusColor, getStatusLabel } from "../../../utils/configurations.utils";
 import { ModalBase } from "../../ModalBase";
 import { FormAcademicCycles } from "../forms/FormAcademicCycles";
+import { TypeStatus } from "../../../lib/globals";
+import { useGetCarrers } from "../../../hooks/useGetCarrers";
+import { formatDate } from "../../../utils/formatDate";
 
 interface Props {
   tabValue: number;
-}
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
+} 
 
 export const TabCycles = ({ tabValue }: Props) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,6 +49,18 @@ export const TabCycles = ({ tabValue }: Props) => {
     delay: 500,
     onUpdate: (value) => setParams({ search: value })
   });
+  
+  const { 
+    carrers: careersForFilter, 
+    loading: loadingCareers
+  } = useGetCarrers({
+    page: 1,
+    limit: 1000,
+    search: '',
+    status: TypeStatus.ACTIVE,
+  });
+  
+  const [careerSearchInput, setCareerSearchInput] = useState('');
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -62,6 +69,8 @@ export const TabCycles = ({ tabValue }: Props) => {
   const handleSuccess = (academicCycle: TypeAcademicCycle) => {
     addAcademicCycle(academicCycle);
   };
+
+  const selectedCareer = careersForFilter.find((c) => c.id === params.careerId) || null;
 
   return (
     <TabPanel value={tabValue} index={1}>
@@ -92,6 +101,70 @@ export const TabCycles = ({ tabValue }: Props) => {
             ),
           }}
           sx={{ flexGrow: 1, minWidth: 250 }}
+        />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            value={params.status || ''}
+            label="Estado"
+            onChange={(e) => setParams({ status: (e.target.value || undefined) as TypeStatus | undefined })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value={TypeStatus.ACTIVE}>Activo</MenuItem>
+            <MenuItem value={TypeStatus.INACTIVE}>Inactivo</MenuItem>
+          </Select>
+        </FormControl>
+        <Autocomplete
+          size="small"
+          sx={{ minWidth: 200 }}
+          options={careersForFilter}
+          getOptionLabel={(option) => option.name || ''}
+          value={selectedCareer}
+          onChange={(_, newValue) => {
+            setParams({ careerId: newValue ? newValue.id : undefined });
+          }}
+          inputValue={careerSearchInput}
+          onInputChange={(_, newInputValue) => {
+            setCareerSearchInput(newInputValue);
+          }}
+          filterOptions={(options, { inputValue }) =>
+            options.filter((option) =>
+              option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+              option.code.toLowerCase().includes(inputValue.toLowerCase())
+            )
+          }
+          loading={loadingCareers}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Carrera"
+              placeholder="Buscar carrera..."
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingCareers ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.id}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="body2">
+                  {option.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {option.code}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+          noOptionsText={
+            loadingCareers ? 'Cargando...' : careerSearchInput ? 'No se encontraron carreras' : 'Seleccione una carrera'
+          }
         />
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Por página</InputLabel>
@@ -133,8 +206,8 @@ export const TabCycles = ({ tabValue }: Props) => {
                 <TableRow>
                   <TableCell colSpan={9} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
-                      {params.search
-                        ? 'No se encontraron ciclos académicos con ese criterio de búsqueda'
+                      {params.search || params.status || params.careerId
+                        ? 'No se encontraron ciclos académicos con los filtros aplicados'
                         : 'No hay ciclos académicos registrados'}
                     </Typography>
                   </TableCell>

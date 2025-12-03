@@ -31,6 +31,8 @@ import { FormCarrer } from "../forms/FormCarrer";
 import type { TypeCareer } from "../../../types/carrers.types";
 import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
 import { ModalBase } from "../../ModalBase";
+import { TypeModality, TypeStatus } from "../../../lib/globals";
+import { getTeachingModeLabel } from "../../../utils/getteachingModelLabel";
 
 interface Props {
   tabValue: number;
@@ -83,6 +85,31 @@ export const TabCarrers: React.FC<Props> = ({ tabValue }) => {
         }}
         sx={{ flexGrow: 1, minWidth: 250 }}
       />
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel>Estado</InputLabel>
+        <Select
+          value={params.status || ''}
+          label="Estado"
+          onChange={(e) => setParams({ status: e.target.value || undefined })}
+        >
+          <MenuItem value="">Todos</MenuItem>
+          <MenuItem value={TypeStatus.ACTIVE}>Activo</MenuItem>
+          <MenuItem value={TypeStatus.INACTIVE}>Inactivo</MenuItem>
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ minWidth: 140 }}>
+        <InputLabel>Modalidad</InputLabel>
+        <Select
+          value={params.modality || ''}
+          label="Modalidad"
+          onChange={(e) => setParams({ modality: (e.target.value || undefined) as TypeModality | undefined })}
+        >
+          <MenuItem value="">Todas</MenuItem>
+          <MenuItem value={TypeModality.IN_PERSON}>Presencial</MenuItem>
+          <MenuItem value={TypeModality.ONLINE}>En línea</MenuItem>
+          <MenuItem value={TypeModality.HYBRID}>Híbrida</MenuItem>
+        </Select>
+      </FormControl>
       <FormControl size="small" sx={{ minWidth: 120 }}>
         <InputLabel>Por página</InputLabel>
         <Select
@@ -135,13 +162,7 @@ export const TabCarrers: React.FC<Props> = ({ tabValue }) => {
                   <TableCell>{career.degreeTitle}</TableCell>
                   <TableCell>
                     <Chip
-                      label={
-                        career.modality === 'hybrid'
-                          ? 'Híbrida'
-                          : career.modality === 'in_person'
-                          ? 'Presencial'
-                          : 'En línea'
-                      }
+                      label={getTeachingModeLabel(career.modality)}
                       size="small"
                       color="info"
                     />

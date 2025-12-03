@@ -1,7 +1,8 @@
 import type { TypeUser } from './user.types';
 import type { TypeAcademicModule } from './academic-modules.types';
-import type { TypeModality } from '../lib/globals';
+import type { TypeModality, TypeStatus } from '../lib/globals';
 import type { TypeTeacher } from './teachers.types';
+import type { TypeParamsGet } from './utils.types';
 
 export interface TypeClass {
   id: string;
@@ -11,7 +12,7 @@ export interface TypeClass {
   qrCode: string; // URL o base64 del QR
   teacherId: string;
   teacher?: TypeUser;
-  status: 'active' | 'inactive' | 'completed';
+  status: TypeStatus;
   createdAt: string;
   updatedAt: string;
   students?: TypeClassStudent[];
@@ -37,7 +38,7 @@ export interface TypeClassWithPagination {
   name: string;
   description: string;
   credits: number;
-  status: string;
+  status: TypeStatus;
   teacherId: string;
   appellative: string;
   typeTeaching: TypeModality;
@@ -66,11 +67,18 @@ export interface TypeClassDetails {
   name: string;
   description: string;
   credits: number;
-  status: 'active' | 'inactive' | 'completed';
+  status: TypeStatus;
   teacherId: string;
   teacher: TypeTeacher;
   typeTeaching: TypeModality;
   maxStudents: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TypeGetClassesParams extends TypeParamsGet {
+  status?: TypeStatus;
+  moduleId?: string;
+  teacherId?: string;
+  typeTeaching?: TypeModality;
 }

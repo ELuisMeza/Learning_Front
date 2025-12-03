@@ -24,10 +24,9 @@ import {
   Badge as BadgeIcon,
   Phone as PhoneIcon,
   CalendarToday as CalendarIcon,
-  PersonPin as PersonPinIcon,
 } from '@mui/icons-material';
 import type { TypeCreateTeacher, TypeTeacher } from '../../../types/teachers.types';
-import { TypeModality, TypeGender } from '../../../lib/globals';
+import { TypeModality, TypeGender, TypeDocumentType } from '../../../lib/globals';
 import toast from 'react-hot-toast';
 import { userService } from '../../../services/user.service';
 
@@ -49,7 +48,7 @@ const schema: yup.ObjectSchema<TypeCreateTeacher> = yup.object({
     .optional(),
   bio: yup.string().optional(),
   cvUrl: yup.string().url('Debe ser una URL válida').max(255, 'Máximo 255 caracteres').optional(),
-  TypeModality: yup
+  teachingModes: yup
     .string()
     .oneOf([TypeModality.IN_PERSON, TypeModality.ONLINE, TypeModality.HYBRID], 'Modo de enseñanza inválido')
     .required('El modo de enseñanza es obligatorio'),
@@ -59,13 +58,12 @@ const schema: yup.ObjectSchema<TypeCreateTeacher> = yup.object({
   documentNumber: yup.string().max(20, 'Máximo 20 caracteres').optional(),
   email: yup.string().email('Debe ser un email válido').required('El email es obligatorio').max(150, 'Máximo 150 caracteres'),
   password: yup.string().required('La contraseña es obligatoria').max(255, 'Máximo 255 caracteres'),
-  roleId: yup.string().uuid('Debe ser un UUID válido').required('El rol es obligatorio'),
   name: yup.string().required('El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
   lastNameFather: yup.string().required('El apellido paterno es obligatorio').max(100, 'Máximo 100 caracteres'),
   lastNameMother: yup.string().max(100, 'Máximo 100 caracteres').optional(),
   gender: yup
     .string()
-    .oneOf([TypeGender.MALE, TypeGender.FEMALE, TypeGender.OTHER], 'Género inválido')
+    .oneOf([TypeGender.MALE, TypeGender.FEMALE], 'Género inválido')
     .required('El género es obligatorio'),
   birthdate: yup.string().required('La fecha de nacimiento es obligatoria'),
   phone: yup.string().max(20, 'Máximo 20 caracteres').optional(),
@@ -86,14 +84,13 @@ export const FormTeacher = ({ onClose, onSuccess }: Props) => {
       experienceYears: undefined,
       bio: '',
       cvUrl: '',
-      TypeModality: TypeModality.IN_PERSON,
+      teachingModes: TypeModality.IN_PERSON,
       
       // Campos del usuario
       documentType: '',
       documentNumber: '',
       email: '',
       password: '',
-      roleId: '',
       name: '',
       lastNameFather: '',
       lastNameMother: '',
@@ -216,7 +213,6 @@ export const FormTeacher = ({ onClose, onSuccess }: Props) => {
                 <Select {...field} label="Género">
                   <MenuItem value={TypeGender.MALE}>Masculino</MenuItem>
                   <MenuItem value={TypeGender.FEMALE}>Femenino</MenuItem>
-                  <MenuItem value={TypeGender.OTHER}>Otro</MenuItem>
                 </Select>
                 {errors.gender && (
                   <Box component="span" sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5, ml: 1.75 }}>
@@ -292,22 +288,25 @@ export const FormTeacher = ({ onClose, onSuccess }: Props) => {
             name="documentType"
             control={control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                label="Tipo de Documento"
-                placeholder="Ej: DNI"
-                fullWidth
-                variant="outlined"
-                error={!!errors.documentType}
-                helperText={errors.documentType?.message}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BadgeIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <FormControl fullWidth error={!!errors.documentType}>
+                <InputLabel>Tipo de Documento</InputLabel>
+                <Select
+                  {...field}
+                  label="Tipo de Documento"
+                  error={!!errors.documentType}
+                >
+                  {Object.values(TypeDocumentType).map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.documentType && (
+                  <Box component="span" sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5, ml: 1.75 }}>
+                    {errors.documentType.message}
+                  </Box>
+                )}
+              </FormControl>
             )}
           />
         </Grid>
@@ -389,32 +388,6 @@ export const FormTeacher = ({ onClose, onSuccess }: Props) => {
                   startAdornment: (
                     <InputAdornment position="start">
                       <LockIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            )}
-          />
-        </Grid>
-
-        {/* Rol */}
-        <Grid size={{ xs: 12 }}>
-          <Controller
-            name="roleId"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="ID del Rol"
-                placeholder="Ej: f5f8b4f0-3f07-4c0f-8a0a-4b4a5b7a9a1c"
-                fullWidth
-                variant="outlined"
-                error={!!errors.roleId}
-                helperText={errors.roleId?.message}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonPinIcon color="action" />
                     </InputAdornment>
                   ),
                 }}
@@ -537,23 +510,23 @@ export const FormTeacher = ({ onClose, onSuccess }: Props) => {
         {/* Modo de Enseñanza */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="TypeModality"
+            name="teachingModes"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!errors.TypeModality}>
+              <FormControl fullWidth error={!!errors.teachingModes}>
                 <InputLabel>Modo de Enseñanza</InputLabel>
                 <Select
                   {...field}
                   label="Modo de Enseñanza"
-                  error={!!errors.TypeModality}
+                  error={!!errors.teachingModes}
                 >
                   <MenuItem value={TypeModality.IN_PERSON}>Presencial</MenuItem>
                   <MenuItem value={TypeModality.ONLINE}>En línea</MenuItem>
                   <MenuItem value={TypeModality.HYBRID}>Híbrido</MenuItem>
                 </Select>
-                {errors.TypeModality && (
+                {errors.teachingModes && (
                   <Box component="span" sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5, ml: 1.75 }}>
-                    {errors.TypeModality.message}
+                    {errors.teachingModes.message}
                   </Box>
                 )}
               </FormControl>

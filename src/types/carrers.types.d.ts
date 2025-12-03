@@ -1,4 +1,5 @@
-import type { TypeModality } from "../lib/globals";
+import type { TypeModality, TypeStatus } from "../lib/globals";
+import type { TypeParamsGet } from "./utils.types";
 
 export interface TypeCareer extends TypeCreateCareer {
     id: string;
@@ -15,4 +16,9 @@ export interface TypeCreateCareer {
     modality: TypeModality;
     durationYears: number;
     totalCredits: number;
+}
+
+export interface TypeGetCareersParams extends TypeParamsGet {
+    status?: TypeStatus;
+    modality?: TypeModality;
 }

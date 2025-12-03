@@ -1,4 +1,5 @@
-import type { TypeModality, TypeGender } from '../lib/globals';
+import type { TypeModality, TypeGender, TypeStatus } from '../lib/globals';
+import type { TypeParamsGet } from './utils.types';
 
 export interface TypeTeacher extends TypeCreateTeacher {
   id: string;
@@ -8,25 +9,26 @@ export interface TypeTeacher extends TypeCreateTeacher {
 }
 
 export interface TypeCreateTeacher {
-  // Campos del profesor
   appellative: string;
   specialty?: string;
   academicDegree?: string;
   experienceYears?: number;
   bio?: string;
   cvUrl?: string;
-  TypeModality: TypeModality;
-  
-  // Campos del usuario
+  teachingModes: TypeModality;
   documentType?: string;
   documentNumber?: string;
   email: string;
   password: string;
-  roleId: string;
   name: string;
   lastNameFather: string;
   lastNameMother?: string;
   gender: TypeGender;
   birthdate: string;
   phone?: string;
+}
+
+export interface TypeGetTeachersParams extends TypeParamsGet {
+  status?: TypeStatus;
+  typeTeaching?: TypeModality;
 }

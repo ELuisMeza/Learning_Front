@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PaginationInfo, TypeParamsGet } from "../types/utils.types";
+import type { PaginationInfo } from "../types/utils.types";
 import toast from "react-hot-toast";
-import type { TypeTeacher } from "../types/teachers.types";
+import type { TypeTeacher, TypeGetTeachersParams } from "../types/teachers.types";
 import { teacherService } from "../services/teacher.service";
 
-export const useGetTeachers = () => {
+export const useGetTeachers = (initialParams?: Partial<TypeGetTeachersParams>) => {
   const [teachers, setTeachers] = useState<TypeTeacher[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [params, setParams] = useState<TypeParamsGet>({
+  const [params, setParams] = useState<TypeGetTeachersParams>({
     page: 1,
     limit: 10,
     search: '',
+    ...initialParams,
   });
 
   const fetchTeachers = useCallback(async () => {
@@ -36,11 +37,11 @@ export const useGetTeachers = () => {
     }
   };
 
-  const updateParams = (newParams: Partial<TypeParamsGet>) => {
+  const updateParams = (newParams: Partial<TypeGetTeachersParams>) => {
     setParams((prev) => {
       const updated = { ...prev, ...newParams };
-      // Si cambia el search, resetear a página 1
-      if (newParams.search !== undefined) {
+      // Si cambia el search, status o typeTeaching, resetear a página 1
+      if (newParams.search !== undefined || newParams.status !== undefined || newParams.typeTeaching !== undefined) {
         updated.page = 1;
       }
       return updated;

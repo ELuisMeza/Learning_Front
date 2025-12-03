@@ -1,12 +1,12 @@
-import type { TypeAcademicCycle, TypeCreateAcademicCycle } from "../types/academic-cycles";
-import type { PaginatedResponse, TypeParamsGet } from "../types/utils.types";
+import type { TypeAcademicCycle, TypeCreateAcademicCycle, TypeGetAcademicCyclesParams } from "../types/academic-cycles";
+import type { PaginatedResponse } from "../types/utils.types";
 import apiService from "./apiService";
 
 const baseUrl = '/academic-cycles';
 
 export const academicCyclesService = {
 
-  getAcademicCycles: async (params: TypeParamsGet) => {
+  getAcademicCycles: async (params: TypeGetAcademicCyclesParams) => {
     try {
       const response = await apiService.post<PaginatedResponse<TypeAcademicCycle>>(`${baseUrl}/get-all`, params);
       return { success: true, data: response.data, message: 'Ciclos académicos obtenidos correctamente' };

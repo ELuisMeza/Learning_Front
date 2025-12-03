@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PaginationInfo, TypeParamsGet } from "../types/utils.types";
+import type { PaginationInfo } from "../types/utils.types";
 import toast from "react-hot-toast";
-import type { TypeAcademicModule } from "../types/academic-modules.types";
+import type { TypeAcademicModule, TypeGetAcademicModulesParams } from "../types/academic-modules.types";
 import { academicModulesService } from "../services/academic-modules.service";
 
-export const useGetAcademicModules = () => {
+export const useGetAcademicModules = (initialParams?: Partial<TypeGetAcademicModulesParams>) => {
   const [academicModules, setAcademicModules] = useState<TypeAcademicModule[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [params, setParams] = useState<TypeParamsGet>({
+  const [params, setParams] = useState<TypeGetAcademicModulesParams>({
     page: 1,
     limit: 10,
     search: '',
+    ...initialParams,
   });
 
   const fetchAcademicModules = useCallback(async () => {
@@ -36,11 +37,11 @@ export const useGetAcademicModules = () => {
     }
   };
 
-  const updateParams = (newParams: Partial<TypeParamsGet>) => {
+  const updateParams = (newParams: Partial<TypeGetAcademicModulesParams>) => {
     setParams((prev) => {
       const updated = { ...prev, ...newParams };
-      // Si cambia el search, resetear a página 1
-      if (newParams.search !== undefined) {
+      // Si cambia el search, status o cycleId, resetear a página 1
+      if (newParams.search !== undefined || newParams.status !== undefined || newParams.cycleId !== undefined) {
         updated.page = 1;
       }
       return updated;

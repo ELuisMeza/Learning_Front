@@ -31,29 +31,13 @@ import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
 import { ModalBase } from "../../ModalBase";
 import { FormTeacher } from "../forms/FormTeacher";
 import type { TypeTeacher } from "../../../types/teachers.types";
+import { TypeStatus, TypeModality } from "../../../lib/globals";
+import { formatDate } from "../../../utils/formatDate";
+import { getTeachingModeLabel } from "../../../utils/getteachingModelLabel";
 
 interface Props {
   tabValue: number;
 }
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
-
-const getTeachingModeLabel = (mode: string) => {
-  const labels: Record<string, string> = {
-    in_person: 'Presencial',
-    online: 'En línea',
-    hybrid: 'Híbrido',
-  };
-  return labels[mode] || mode;
-};
 
 export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -103,6 +87,31 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
           }}
           sx={{ flexGrow: 1, minWidth: 250 }}
         />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            value={params.status || ''}
+            label="Estado"
+            onChange={(e) => setParams({ status: (e.target.value || undefined) as TypeStatus | undefined })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value={TypeStatus.ACTIVE}>Activo</MenuItem>
+            <MenuItem value={TypeStatus.INACTIVE}>Inactivo</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel>Modo de Enseñanza</InputLabel>
+          <Select
+            value={params.typeTeaching || ''}
+            label="Modo de Enseñanza"
+            onChange={(e) => setParams({ typeTeaching: (e.target.value || undefined) as TypeModality | undefined })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value={TypeModality.IN_PERSON}>Presencial</MenuItem>
+            <MenuItem value={TypeModality.ONLINE}>En línea</MenuItem>
+            <MenuItem value={TypeModality.HYBRID}>Híbrido</MenuItem>
+          </Select>
+        </FormControl>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Por página</InputLabel>
           <Select
@@ -142,8 +151,8 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
-                      {params.search
-                        ? 'No se encontraron profesores con ese criterio de búsqueda'
+                      {params.search || params.status || params.typeTeaching
+                        ? 'No se encontraron profesores con los filtros aplicados'
                         : 'No hay profesores registrados'}
                     </Typography>
                   </TableCell>
@@ -173,9 +182,9 @@ export const TabTeachers: React.FC<Props> = ({ tabValue }) => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={getTeachingModeLabel(teacher.TypeModality)}
+                        label={getTeachingModeLabel(teacher.teachingModes)}
                         size="small"
-                        variant="outlined"
+                        color="info"
                       />
                     </TableCell>
                     <TableCell>

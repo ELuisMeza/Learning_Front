@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import type { TypeParamsGet, PaginationInfo } from "../types/utils.types";
-import type { TypeUser } from "../types/user.types";
+import type { PaginationInfo } from "../types/utils.types";
+import type { TypeUser, TypeGetUsersParams } from "../types/user.types";
 import { userService } from "../services/user.service";
 
 export const useGetUsers = () => {
   const [users, setUsers] = useState<TypeUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [params, setParams] = useState<TypeParamsGet>({
+  const [params, setParams] = useState<TypeGetUsersParams>({
     page: 1,
     limit: 10,
     search: '',
@@ -36,11 +36,11 @@ export const useGetUsers = () => {
     }
   };
 
-  const updateParams = (newParams: Partial<TypeParamsGet>) => {
+  const updateParams = (newParams: Partial<TypeGetUsersParams>) => {
     setParams((prev) => {
       const updated = { ...prev, ...newParams };
-      // Si cambia el search, resetear a página 1
-      if (newParams.search !== undefined) {
+      // Si cambia el search o status, resetear a página 1
+      if (newParams.search !== undefined || newParams.status !== undefined) {
         updated.page = 1;
       }
       return updated;

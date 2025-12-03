@@ -17,7 +17,9 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Autocomplete,
+  CircularProgress
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -31,20 +33,13 @@ import { getStatusColor, getStatusLabel } from "../../../utils/configurations.ut
 import { ModalBase } from "../../ModalBase";
 import { FormAcademicModule } from "../forms/FormAcademicModule";
 import type { TypeAcademicModule } from "../../../types/academic-modules.types";
+import { TypeStatus } from "../../../lib/globals";
+import { useGetAcademicCyles } from "../../../hooks/useGetAcademicCyles";
+import { formatDate } from "../../../utils/formatDate";
 
 interface Props {
   tabValue: number;
 }
-
-const formatDate = (dateString: string): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
 
 export const TabModules: React.FC<Props> = ({ tabValue }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,6 +49,18 @@ export const TabModules: React.FC<Props> = ({ tabValue }) => {
     delay: 500,
     onUpdate: (value) => setParams({ search: value })
   });
+  
+  const { 
+    academicCycles: cyclesForFilter, 
+    loading: loadingCycles
+  } = useGetAcademicCyles({
+    page: 1,
+    limit: 1000,
+    search: '',
+    status: TypeStatus.ACTIVE,
+  });
+  
+  const [cycleSearchInput, setCycleSearchInput] = useState('');
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -94,6 +101,70 @@ export const TabModules: React.FC<Props> = ({ tabValue }) => {
           }}
           sx={{ flexGrow: 1, minWidth: 250 }}
         />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            value={params.status || ''}
+            label="Estado"
+            onChange={(e) => setParams({ status: (e.target.value || undefined) as TypeStatus | undefined })}
+          >
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value={TypeStatus.ACTIVE}>Activo</MenuItem>
+            <MenuItem value={TypeStatus.INACTIVE}>Inactivo</MenuItem>
+          </Select>
+        </FormControl>
+        <Autocomplete
+          size="small"
+          sx={{ minWidth: 200 }}
+          options={cyclesForFilter}
+          getOptionLabel={(option) => option.name || ''}
+          value={cyclesForFilter.find((c) => c.id === params.cycleId) || null}
+          onChange={(_, newValue) => {
+            setParams({ cycleId: newValue ? newValue.id : undefined });
+          }}
+          inputValue={cycleSearchInput}
+          onInputChange={(_, newInputValue) => {
+            setCycleSearchInput(newInputValue);
+          }}
+          loading={loadingCycles}
+          filterOptions={(options, { inputValue }) =>
+            options.filter((option) =>
+              option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+              option.code.toLowerCase().includes(inputValue.toLowerCase())
+            )
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Ciclo Académico"
+              placeholder="Buscar ciclo..."
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingCycles ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={(props, option) => (
+            <Box component="li" {...props} key={option.id}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="body2">
+                  {option.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {option.code}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+          noOptionsText={
+            loadingCycles ? 'Cargando...' : cycleSearchInput ? 'No se encontraron ciclos' : 'Seleccione un ciclo'
+          }
+        />
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Por página</InputLabel>
           <Select
@@ -133,8 +204,8 @@ export const TabModules: React.FC<Props> = ({ tabValue }) => {
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 2 }}>
-                      {params.search
-                        ? 'No se encontraron módulos académicos con ese criterio de búsqueda'
+                      {params.search || params.status || params.cycleId
+                        ? 'No se encontraron módulos académicos con los filtros aplicados'
                         : 'No hay módulos académicos registrados'}
                     </Typography>
                   </TableCell>

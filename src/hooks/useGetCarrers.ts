@@ -1,17 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
-import type { TypeCareer } from "../types/carrers.types";
+import type { TypeCareer, TypeGetCareersParams } from "../types/carrers.types";
 import { careersService } from "../services/carres.service";
 import toast from "react-hot-toast";
-import type { TypeParamsGet, PaginationInfo } from "../types/utils.types";
+import type { PaginationInfo } from "../types/utils.types";
 
-export const useGetCarrers = () => {
+export const useGetCarrers = (initialParams?: Partial<TypeGetCareersParams>) => {
   const [carrers, setCarrers] = useState<TypeCareer[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [params, setParams] = useState<TypeParamsGet>({
+  const [params, setParams] = useState<TypeGetCareersParams>({
     page: 1,
     limit: 10,
     search: '',
+    ...initialParams,
   });
 
   const fetchCarrers = useCallback(async () => {
@@ -36,11 +37,11 @@ export const useGetCarrers = () => {
     }
   };
 
-  const updateParams = (newParams: Partial<TypeParamsGet>) => {
+  const updateParams = (newParams: Partial<TypeGetCareersParams>) => {
     setParams((prev) => {
       const updated = { ...prev, ...newParams };
-      // Si cambia el search, resetear a página 1
-      if (newParams.search !== undefined) {
+      // Si cambia el search, status o modality, resetear a página 1
+      if (newParams.search !== undefined || newParams.status !== undefined || newParams.modality !== undefined) {
         updated.page = 1;
       }
       return updated;

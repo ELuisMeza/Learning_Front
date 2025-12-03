@@ -1,6 +1,6 @@
 import type { TypeCreateTeacher, TypeTeacher } from "../types/teachers.types";
-import type { TypeUser, TypeUserCreate } from "../types/user.types";
-import type { PaginatedResponse, TypeParamsGet } from "../types/utils.types";
+import type { TypeGetUsersParams, TypeUser, TypeUserCreate } from "../types/user.types";
+import type { PaginatedResponse } from "../types/utils.types";
 import apiService from "./apiService";
 
 const baseURL = 'users';
@@ -33,7 +33,7 @@ export const userService = {
     }
   },
 
-  getAllUsers: async (params: TypeParamsGet) => {
+  getAllUsers: async (params: TypeGetUsersParams) => {
     try {
       const response = await apiService.post<PaginatedResponse<TypeUser>>(`${baseURL}/get-all`, params);
       return { success: true, data: response.data, message: 'Usuarios obtenidos exitosamente' };
