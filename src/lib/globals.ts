@@ -13,3 +13,11 @@ export const TypeModality = {
 } as const;
 
 export type TypeModality = typeof TypeModality[keyof typeof TypeModality];
+
+export const TypeEvaluationMode = {
+  SELF: 'self',
+  PEER: 'peer',
+  TEACHER: 'teacher',
+} as const;
+
+export type TypeEvaluationMode = typeof TypeEvaluationMode[keyof typeof TypeEvaluationMode];

@@ -1,6 +1,7 @@
 import type { TypeUser } from './user.types';
 import type { TypeRubric, TypeRubricCriteria, TypeRubricLevel } from './rubric.types';
 import type { TypeClass } from './class.types';
+import type { TypeEvaluationMode } from '../lib/globals';
 
 export interface TypeEvaluation {
   id: string;
@@ -43,3 +44,22 @@ export interface TypeEvaluationScore {
   score: number;
 }
 
+export interface TypeCreateEvaluation {
+  classId: string;
+  name: string;
+  description: string;
+  rubricId?: string;
+  maxScore: number;
+  evaluationTypeId: string;
+  evaluationMode: TypeEvaluationMode;
+  startDate: string;
+  endDate: string;
+}
+
+export interface TypeEvaluationType {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}

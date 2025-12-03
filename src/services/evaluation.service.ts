@@ -1,5 +1,7 @@
 import apiService from './apiService';
-import type { TypeEvaluation, TypeEvaluationResult } from '../types/evaluation.types';
+import type { TypeCreateEvaluation, TypeEvaluation, TypeEvaluationResult } from '../types/evaluation.types';
+
+const baseUrl = '/evaluations';
 
 export const evaluationService = {
   // Obtener evaluaciones de una clase
@@ -8,18 +10,13 @@ export const evaluationService = {
     return response.data;
   },
 
-  // Crear una nueva evaluación
-  createEvaluation: async (data: {
-    name: string;
-    description: string;
-    rubricId: string;
-    classId: string;
-    type: 'self' | 'peer' | 'individual' | 'group';
-    startDate: string;
-    endDate: string;
-  }): Promise<TypeEvaluation> => {
-    const response = await apiService.post('/evaluations', data);
-    return response.data;
+  create: async (data: TypeCreateEvaluation) => {
+    try {
+      const response = await apiService.post(baseUrl, data);
+      return { success: true, data: response.data, message: 'Evaluación creada exitosamente' };
+    } catch (error) {
+      return { success: false, message: 'Error al crear la evaluación' };
+    }
   },
 
   // Obtener una evaluación por ID
@@ -54,6 +51,15 @@ export const evaluationService = {
   getMyEvaluations: async (): Promise<TypeEvaluation[]> => {
     const response = await apiService.get('/evaluations/student/me');
     return response.data;
+  },
+
+  getEvaluationTypes: async () => {
+    try { 
+    const response = await apiService.get('/evaluation-types');
+    return { success: true, data: response.data, message: 'Tipos de evaluación obtenidos exitosamente' };
+    } catch (error) {
+      return { success: false, message: 'Error al obtener los tipos de evaluación' };
+    }
   },
 };
 
