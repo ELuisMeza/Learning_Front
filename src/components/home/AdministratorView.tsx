@@ -19,6 +19,7 @@ import ComputerIcon from '@mui/icons-material/Computer';
 import HomeIcon from '@mui/icons-material/Home';
 import { useUserStore } from '../../stores/user.store';
 import { useGetStadistics } from '../../hooks/useGetStadistics';
+import { TypeModality } from '../../lib/globals';
 
 const getTeachingModeLabel = (mode: string) => {
   const labels: Record<string, string> = {
@@ -236,19 +237,19 @@ export const AdministratorView = () => {
           ) : stadistics?.teachers.teachers.byTeachingMode.length ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {stadistics.teachers.teachers.byTeachingMode.map((item) => (
-                <Box key={item.TypeModality} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box key={item.teachingModes} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {item.TypeModality === 'in_person' && <HomeIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
-                    {item.TypeModality === 'online' && <ComputerIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
-                    {item.TypeModality === 'hybrid' && <SchoolIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.TypeModality) }} />}
-                    <Typography variant="body2">{getTeachingModeLabel(item.TypeModality)}</Typography>
+                    {item.teachingModes === TypeModality.IN_PERSON && <HomeIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
+                    {item.teachingModes === TypeModality.ONLINE && <ComputerIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
+                    {item.teachingModes === TypeModality.HYBRID && <SchoolIcon sx={{ fontSize: 20, color: getTeachingModeColor(item.teachingModes) }} />}
+                    <Typography variant="body2">{getTeachingModeLabel(item.teachingModes)}</Typography>
                   </Box>
                   <Chip
                     label={item.count}
                     size="small"
                     sx={{
-                      backgroundColor: `${getTeachingModeColor(item.TypeModality)}20`,
-                      color: getTeachingModeColor(item.TypeModality),
+                      backgroundColor: `${getTeachingModeColor(item.teachingModes)}20`,
+                      color: getTeachingModeColor(item.teachingModes),
                       fontWeight: 'bold',
                     }}
                   />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -15,10 +16,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Chip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import PeopleIcon from '@mui/icons-material/People';
 import { classService } from '../services/class.service';
@@ -27,12 +26,11 @@ import toast from 'react-hot-toast';
 import { QRCodeSVG } from 'qrcode.react';
 
 const ClassesPage = () => {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState<TypeClass[]>([]);
   const [loading, setLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TypeClass | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
 
   useEffect(() => {
     loadClasses();
@@ -50,25 +48,19 @@ const ClassesPage = () => {
     }
   };
 
-  const handleCreateClass = async () => {
-    try {
-      if (!formData.name.trim()) {
-        toast.error('El nombre de la clase es requerido');
-        return;
-      }
-      await classService.createClass(formData);
-      toast.success('Clase creada exitosamente');
-      setOpenDialog(false);
-      setFormData({ name: '', description: '' });
-      loadClasses();
-    } catch (error) {
-      toast.error('Error al crear la clase');
-    }
-  };
-
-  const handleShowQR = (classItem: TypeClass) => {
+  const handleShowQR = (classItem: TypeClass, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setSelectedClass(classItem);
     setOpenQRDialog(true);
+  };
+
+  const handleClassClick = (classItem: TypeClass) => {
+    navigate(`/dashboard/classes/${classItem.id}`);
+  };
+
+  const handleViewStudents = (classItem: TypeClass, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/dashboard/classes/${classItem.id}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -101,13 +93,6 @@ const ClassesPage = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Mis Clases</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-        >
-          Nueva Clase
-        </Button>
       </Box>
 
       <TableContainer component={Paper}>
@@ -136,7 +121,16 @@ const ClassesPage = () => {
               </TableRow>
             ) : (
               classes.map((classItem) => (
-                <TableRow key={classItem.id}>
+                <TableRow 
+                  key={classItem.id}
+                  onClick={() => handleClassClick(classItem)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    }
+                  }}
+                >
                   <TableCell>{classItem.name}</TableCell>
                   <TableCell>{classItem.description || '-'}</TableCell>
                   <TableCell>
@@ -151,10 +145,10 @@ const ClassesPage = () => {
                       {classItem.code}
                     </Typography>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                     <IconButton
                       size="small"
-                      onClick={() => handleShowQR(classItem)}
+                      onClick={(e) => handleShowQR(classItem, e)}
                       color="primary"
                       title="Ver código QR"
                     >
@@ -162,8 +156,9 @@ const ClassesPage = () => {
                     </IconButton>
                     <IconButton
                       size="small"
+                      onClick={(e) => handleViewStudents(classItem, e)}
                       color="primary"
-                      title="Ver estudiantes"
+                      title="Ver detalles"
                     >
                       <PeopleIcon />
                     </IconButton>
@@ -174,39 +169,6 @@ const ClassesPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Dialog para crear clase */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Crear Nueva Clase</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nombre de la clase"
-            fullWidth
-            variant="outlined"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Descripción"
-            fullWidth
-            multiline
-            rows={4}
-            variant="outlined"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-          <Button onClick={handleCreateClass} variant="contained">
-            Crear
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Dialog para mostrar QR */}
       <Dialog open={openQRDialog} onClose={() => setOpenQRDialog(false)} maxWidth="xs" fullWidth>

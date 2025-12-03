@@ -12,6 +12,7 @@ import MyClassesPage from '../pages/MyClassesPage';
 import MyEvaluationsPage from '../pages/MyEvaluationsPage';
 import EvaluationFormPage from '../pages/EvaluationFormPage';
 import SettingsPage from '../pages/SettingsPage';
+import ClassDetailsPage from '../pages/ClassDetailsPage';
 import { useUserStore } from '../stores/user.store';
 
 
@@ -56,6 +57,10 @@ export const routes: RouteObject[] = [
       {
         path: 'classes',
         element: <ClassesPage />,
+      },
+      {
+        path: 'classes/:classId',
+        element: <ClassDetailsPage />,
       },
       {
         path: 'rubrics',

@@ -1,5 +1,5 @@
 import apiService from './apiService';
-import type { TypeClass, TypeClassStudent, TypeClassWithPagination, TypeCreateClass } from '../types/class.types';
+import type { TypeClass, TypeClassDetails, TypeClassStudent, TypeClassWithPagination, TypeCreateClass } from '../types/class.types';
 import type { TypeParamsGet } from '../types/utils.types';
 import type { PaginatedResponse } from '../types/utils.types';
 
@@ -22,17 +22,15 @@ export const classService = {
   },
 
   // Obtener una clase por ID
-  getClassById: async (id: string): Promise<TypeClass> => {
-    const response = await apiService.get(`${baseUrl}/${id}`);
-    return response.data;
+  getClassById: async (id: string) => {
+    try {
+      const response = await apiService.get<TypeClassDetails>(`${baseUrl}/${id}`);
+      return { success: true, data: response.data, message: 'Clase obtenida exitosamente' };
+    } catch (error) {
+      return { success: false, message: 'Error al obtener la clase' };
+    }
   },
-
-  // Obtener clase por código QR
-  getClassByCode: async (code: string): Promise<TypeClass> => {
-    const response = await apiService.get(`${baseUrl}/code/${code}`);
-    return response.data;
-  },
-
+  
   // Inscribir estudiante a una clase (autoinscripción)
   enrollStudent: async (classId: string): Promise<TypeClassStudent> => {
     const response = await apiService.post(`${baseUrl}/${classId}/enroll`);
