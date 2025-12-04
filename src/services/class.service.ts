@@ -33,6 +33,12 @@ export const classService = {
       return { success: false, message: 'Error al obtener la clase' };
     }
   },
+
+  // Obtener una clase por código (para estudiantes - inscripción)
+  getClassByCode: async (code: string): Promise<TypeClass> => {
+    const response = await apiService.get(`${baseUrl}/code/${code}`);
+    return response.data;
+  },
   
   // Inscribir estudiante a una clase (autoinscripción)
   enrollStudent: async (classId: string): Promise<TypeClassStudent> => {

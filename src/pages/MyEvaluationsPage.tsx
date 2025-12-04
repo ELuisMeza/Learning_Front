@@ -13,6 +13,7 @@ import {
   Chip,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { evaluationService } from '../services/evaluation.service';
 import type { TypeEvaluation } from '../types/evaluation.types';
 import toast from 'react-hot-toast';
@@ -164,6 +165,17 @@ const MyEvaluationsPage = () => {
                         onClick={() => handleStartEvaluation(evaluation.id)}
                       >
                         Realizar
+                      </Button>
+                    )}
+                    {evaluation.status === 'completed' && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        onClick={() => navigate(`/dashboard/evaluation/${evaluation.id}/results`)}
+                        sx={{ ml: 1 }}
+                      >
+                        Ver Resultados
                       </Button>
                     )}
                   </TableCell>

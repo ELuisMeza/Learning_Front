@@ -26,12 +26,12 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { rubricService } from '../services/rubric.service';
 import { classService } from '../services/class.service';
 import type { TypeRubric } from '../types/rubric.types';
-import type { TypeClass } from '../types/class.types';
+import type { TypeClassByTeacher } from '../types/class.types';
 import toast from 'react-hot-toast';
 
 const RubricsPage = () => {
   const [rubrics, setRubrics] = useState<TypeRubric[]>([]);
-  const [classes, setClasses] = useState<TypeClass[]>([]);
+  const [classes, setClasses] = useState<TypeClassByTeacher[]>([]);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
@@ -45,14 +45,22 @@ const RubricsPage = () => {
 
   const loadClasses = async () => {
     try {
-      const data = await classService.getClasses();
-      setClasses(data);
+      const { success, data, message } = await classService.getClassesByTeacher({
+        page: 1,
+        limit: 1000,
+        search: '',
+      });
+      if (success && data) {
+        setClasses(data.data);
+      } else {
+        toast.error(message || 'Error al cargar las clases');
+      }
     } catch (error) {
       toast.error('Error al cargar las clases');
     }
   };
 
-  const loadRubrics = async (classesList?: TypeClass[]) => {
+  const loadRubrics = async (classesList?: TypeClassByTeacher[]) => {
     try {
       setLoading(true);
       // Usar la lista proporcionada o el estado actual de clases

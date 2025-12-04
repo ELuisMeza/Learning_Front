@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -7,8 +7,13 @@ import {
   Button,
   Alert,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
 } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import CloseIcon from '@mui/icons-material/Close';
 import { classService } from '../services/class.service';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +21,13 @@ import { useNavigate } from 'react-router-dom';
 const ScanQRPage = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const scannerRef = useRef<HTMLDivElement>(null);
+  const qrCodeScannerRef = useRef<any>(null);
+  const scanningRef = useRef(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleManualCode = async () => {
     if (!code.trim()) {
@@ -41,16 +52,197 @@ const ScanQRPage = () => {
     }
   };
 
-  const handleCameraScan = () => {
-    // Usar API nativa del navegador para escanear QR
-    if (typeof navigator !== 'undefined' && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-      // Aquí se implementaría la lógica de escaneo con cámara
-      // Por ahora, mostramos un mensaje informativo
-      toast('Funcionalidad de escaneo con cámara próximamente. Usa la entrada manual.', {
-        icon: 'ℹ',
-      });
-    } else {
+  useEffect(() => {
+    // Limpiar recursos cuando el componente se desmonte
+    return () => {
+      stopScanning();
+    };
+  }, []);
+
+  const stopScanning = async () => {
+    scanningRef.current = false;
+    
+    if (qrCodeScannerRef.current) {
+      // Si es un MediaStream (API nativa)
+      if (qrCodeScannerRef.current instanceof MediaStream) {
+        qrCodeScannerRef.current.getTracks().forEach((track: MediaStreamTrack) => {
+          track.stop();
+        });
+      } 
+      // Si es Html5Qrcode (librería CDN)
+      else if (qrCodeScannerRef.current.stop) {
+        try {
+          await qrCodeScannerRef.current.stop();
+          await qrCodeScannerRef.current.clear();
+        } catch (error) {
+          // Ignorar errores al detener
+        }
+      }
+      qrCodeScannerRef.current = null;
+    }
+    
+    // Limpiar el video
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+      videoRef.current = null;
+    }
+    
+    // Limpiar el contenido del contenedor
+    if (scannerRef.current) {
+      scannerRef.current.innerHTML = '';
+    }
+    
+    setScanning(false);
+    setCameraError(null);
+  };
+
+  const processQRCode = async (qrCode: string) => {
+    if (!qrCode || loading) return;
+
+    try {
+      setLoading(true);
+      stopScanning();
+      
+      const classData = await classService.getClassByCode(qrCode.trim());
+      
+      // Inscribirse a la clase
+      await classService.enrollStudent(classData.id);
+      
+      toast.success(`Te has inscrito exitosamente a la clase: ${classData.name}`);
+      navigate('/dashboard/my-classes');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Error al inscribirse a la clase';
+      toast.error(errorMessage);
+      // No reiniciar automáticamente, el usuario puede intentar de nuevo
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadQRScannerFromCDN = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if ((window as any).Html5Qrcode) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Error al cargar la librería de escaneo QR'));
+      document.head.appendChild(script);
+    });
+  };
+
+  const startQRScanner = () => {
+    if (!scannerRef.current) return;
+
+    const Html5Qrcode = (window as any).Html5Qrcode;
+    const html5QrCode = new Html5Qrcode(scannerRef.current.id);
+
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+      },
+      (decodedText: string) => {
+        processQRCode(decodedText);
+      },
+      (_errorMessage: string) => {
+        // Ignorar errores de escaneo continuo
+      }
+    ).catch((err: Error) => {
+      setCameraError('Error al iniciar el escáner: ' + err.message);
+      toast.error('Error al iniciar el escáner');
+      setScanning(false);
+    });
+
+    qrCodeScannerRef.current = html5QrCode;
+  };
+
+  const handleCameraScan = async () => {
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
       toast.error('Tu navegador no soporta el acceso a la cámara');
+      return;
+    }
+
+    try {
+      setScanning(true);
+      scanningRef.current = true;
+      setCameraError(null);
+
+      // Intentar usar la API BarcodeDetector nativa (Chrome/Edge)
+      const hasBarcodeDetector = 'BarcodeDetector' in window;
+      
+      if (hasBarcodeDetector) {
+        // Usar API nativa BarcodeDetector
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } // Cámara trasera en móviles
+        });
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
+        video.style.width = '100%';
+        video.style.height = 'auto';
+        
+        if (scannerRef.current) {
+          scannerRef.current.innerHTML = '';
+          scannerRef.current.appendChild(video);
+        }
+
+        await video.play();
+        qrCodeScannerRef.current = stream;
+        videoRef.current = video;
+
+        const barcodeDetector = new (window as any).BarcodeDetector({
+          formats: ['qr_code']
+        });
+
+        const scanFrame = async () => {
+          if (!scanningRef.current || !video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+            if (scanningRef.current) {
+              requestAnimationFrame(scanFrame);
+            }
+            return;
+          }
+
+          try {
+            const barcodes = await barcodeDetector.detect(video);
+            if (barcodes.length > 0 && barcodes[0].rawValue) {
+              processQRCode(barcodes[0].rawValue);
+              return;
+            }
+          } catch (err) {
+            // Continuar escaneando
+          }
+
+          if (scanningRef.current) {
+            requestAnimationFrame(scanFrame);
+          }
+        };
+
+        scanFrame();
+      } else {
+        // Fallback: Cargar librería desde CDN
+        await loadQRScannerFromCDN();
+        startQRScanner();
+      }
+    } catch (error: any) {
+      setScanning(false);
+      scanningRef.current = false;
+      if (error.name === 'NotAllowedError') {
+        setCameraError('Permisos de cámara denegados. Por favor, permite el acceso a la cámara.');
+        toast.error('Permisos de cámara denegados');
+      } else if (error.name === 'NotFoundError') {
+        setCameraError('No se encontró ninguna cámara en tu dispositivo.');
+        toast.error('No se encontró ninguna cámara');
+      } else {
+        setCameraError('Error al acceder a la cámara: ' + error.message);
+        toast.error('Error al acceder a la cámara');
+      }
     }
   };
 
@@ -75,16 +267,64 @@ const ScanQRPage = () => {
             <Button
               variant="contained"
               onClick={handleCameraScan}
-              disabled={loading}
+              disabled={loading || scanning}
               fullWidth
             >
-              Abrir Cámara
+              {scanning ? 'Escaneando...' : 'Abrir Cámara'}
             </Button>
-            <Alert severity="info" sx={{ mt: 2 }}>
-              Esta funcionalidad requiere permisos de cámara. Por ahora, usa la entrada manual.
-            </Alert>
+            {cameraError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {cameraError}
+              </Alert>
+            )}
           </Box>
         </Paper>
+
+        {/* Dialog para el escáner */}
+        <Dialog
+          open={scanning}
+          onClose={stopScanning}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography>Escanear Código QR</Typography>
+              <IconButton onClick={stopScanning}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <Box
+              id="qr-scanner"
+              ref={scannerRef}
+              sx={{
+                width: '100%',
+                minHeight: '300px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'black',
+                borderRadius: 2,
+                overflow: 'hidden',
+              }}
+            />
+            {cameraError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {cameraError}
+              </Alert>
+            )}
+            <Button
+              variant="outlined"
+              onClick={stopScanning}
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Cerrar Cámara
+            </Button>
+          </DialogContent>
+        </Dialog>
 
         {/* Opción 2: Entrada manual */}
         <Paper sx={{ p: 3 }}>

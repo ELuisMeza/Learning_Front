@@ -11,6 +11,7 @@ import ScanQRPage from '../pages/ScanQRPage';
 import MyClassesPage from '../pages/MyClassesPage';
 import MyEvaluationsPage from '../pages/MyEvaluationsPage';
 import EvaluationFormPage from '../pages/EvaluationFormPage';
+import EvaluationResultsPage from '../pages/EvaluationResultsPage';
 import SettingsPage from '../pages/SettingsPage';
 import ClassDetailsPage from '../pages/ClassDetailsPage';
 import { useUserStore } from '../stores/user.store';
@@ -86,6 +87,10 @@ export const routes: RouteObject[] = [
       {
         path: 'evaluation/:evaluationId',
         element: <EvaluationFormPage />,
+      },
+      {
+        path: 'evaluation/:evaluationId/results',
+        element: <EvaluationResultsPage />,
       },
       // Rutas para Administrador
       {
