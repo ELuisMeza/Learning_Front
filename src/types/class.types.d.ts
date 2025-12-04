@@ -1,6 +1,6 @@
 import type { TypeUser } from './user.types';
 import type { TypeAcademicModule } from './academic-modules.types';
-import type { TypeModality, TypeStatus } from '../lib/globals';
+import type { TypeEvaluationMode, TypeModality, TypeStatus } from '../lib/globals';
 import type { TypeTeacher } from './teachers.types';
 import type { TypeParamsGet } from './utils.types';
 
@@ -22,12 +22,14 @@ export interface TypeClass {
 }
 
 export interface TypeClassStudent {
-  id: string;
   classId: string;
   studentId: string;
   student?: TypeUser;
-  enrolledAt: string;
-  status: 'enrolled' | 'completed';
+  enrollmentDate: string;
+  finalNote: number | null;
+  status: TypeEnrollmentStatus;
+  updatedAt: string;
+  userModifiedId: string;
 }
 
 export interface TypeClassWithPagination {
@@ -59,21 +61,29 @@ export interface TypeCreateClass {
   typeTeaching: TypeModality;
 }
 
+export interface TypeClassEvaluation {
+  name: string;
+  description: string;
+  mode: TypeEvaluationMode;
+}
+
 export interface TypeClassDetails {
   id: string;
-  moduleId: string;
-  module: TypeAcademicModule;
-  code: string;
   name: string;
   description: string;
   credits: number;
-  status: TypeStatus;
-  teacherId: string;
-  teacher: TypeTeacher;
+  code: string;
   typeTeaching: TypeModality;
   maxStudents: number;
   createdAt: string;
-  updatedAt: string;
+  moduleName: string;
+  moduleCode: string;
+  cycleName: string;
+  cycleCode: string;
+  careerName: string;
+  careerCode: string;
+  teacherAppellative: string;
+  evaluations: TypeClassEvaluation[];
 }
 
 export interface TypeClassByTeacher {

@@ -37,7 +37,7 @@ import { TypeStatus, TypeModality } from "../../../lib/globals";
 import { useGetTeachers } from "../../../hooks/useGetTeachers";
 import { useGetAcademicModules } from "../../../hooks/useGetAcademicModules";
 import { formatDate } from "../../../utils/formatDate";
-import { getTeachingModeLabel } from "../../../utils/getteachingModelLabel";
+import { getTeachingModeLabel } from "../../../utils/getLabel";
 
 interface Props {
   tabValue: number;

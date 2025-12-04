@@ -1,4 +1,4 @@
-import type { TypeCreateTeacher, TypeTeacher, TypeGetTeachersParams } from "../types/teachers.types";
+import type { TypeTeacher, TypeGetTeachersParams } from "../types/teachers.types";
 import type { PaginatedResponse } from "../types/utils.types";
 import apiService from "./apiService";
 
@@ -13,12 +13,4 @@ export const teacherService = {
       return { success: false, message: 'Error al obtener los profesores' };
     }
   },
-  createTeacher: async (data: TypeCreateTeacher) => {
-    try {
-      const response = await apiService.post<TypeTeacher>(`${baseURL}`, data);
-      return { success: true, data: response.data, message: 'Profesor creado exitosamente' };
-    } catch (error) {
-      return { success: false, message: 'Error al crear el profesor' };
-    }
-  }
 }

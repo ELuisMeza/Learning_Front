@@ -32,7 +32,7 @@ import type { TypeCareer } from "../../../types/carrers.types";
 import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
 import { ModalBase } from "../../ModalBase";
 import { TypeModality, TypeStatus } from "../../../lib/globals";
-import { getTeachingModeLabel } from "../../../utils/getteachingModelLabel";
+import { getTeachingModeLabel } from "../../../utils/getLabel";
 
 interface Props {
   tabValue: number;

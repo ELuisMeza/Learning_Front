@@ -40,12 +40,6 @@ export const classService = {
     return response.data;
   },
 
-  // Obtener estudiantes de una clase
-  getClassStudents: async (classId: string): Promise<TypeClassStudent[]> => {
-    const response = await apiService.get(`${baseUrl}/${classId}/students`);
-    return response.data;
-  },
-
   // Obtener clases del estudiante actual
   getMyClasses: async (): Promise<TypeClass[]> => {
     const response = await apiService.get('/class-students/by-student');

@@ -35,3 +35,11 @@ export const TypeDocumentType = {
 } as const;
 
 export type TypeDocumentType = typeof TypeDocumentType[keyof typeof TypeDocumentType];
+
+export const TypeEnrollmentStatus = {
+  IN_COURSE: 'in_course',
+  COMPLETED: 'completed',
+  WITHDRAWN: 'withdrawn',
+} as const;
+
+export type TypeEnrollmentStatus = typeof TypeEnrollmentStatus[keyof typeof TypeEnrollmentStatus];

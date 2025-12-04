@@ -4,7 +4,6 @@ import LoginPage from '../pages/LoginPage';
 import SideBar from '../components/SideBar';
 import HomePage from '../pages/HomePage';
 import AuthCallbackPage from '../pages/AuthCallbackPage';
-import ClassesPage from '../pages/ClassesPage';
 import RubricsPage from '../pages/RubricsPage';
 import EvaluationsPage from '../pages/EvaluationsPage';
 import ScanQRPage from '../pages/ScanQRPage';
@@ -14,6 +13,7 @@ import EvaluationFormPage from '../pages/EvaluationFormPage';
 import SettingsPage from '../pages/SettingsPage';
 import ClassDetailsPage from '../pages/ClassDetailsPage';
 import { useUserStore } from '../stores/user.store';
+import ClassesByTeacherPage from '../pages/ClassesByTeacherPage';
 
 
 function LoginRoute() {
@@ -56,7 +56,7 @@ export const routes: RouteObject[] = [
       // Rutas para Docente
       {
         path: 'classes',
-        element: <ClassesPage />,
+        element: <ClassesByTeacherPage />,
       },
       {
         path: 'classes/:classId',

@@ -25,19 +25,19 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
-import { useGetClasses } from '../hooks/useGetClassesByTeacher';
 import type { TypeClassByTeacher } from '../types/class.types';
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch';
 import { useGetAcademicModules } from '../hooks/useGetAcademicModules';
 import { useGetAcademicCyles } from '../hooks/useGetAcademicCyles';
 import { useGetCarrers } from '../hooks/useGetCarrers';
 import { TypeStatus, TypeModality } from '../lib/globals';
-import { getTeachingModeLabel } from '../utils/getteachingModelLabel';
+import { getTeachingModeLabel } from '../utils/getLabel';
 import { formatDate } from '../utils/formatDate';
+import { useGetClassesByTeacher } from '../hooks/useGetClassesByTeacher';
 
-const ClassesPage = () => {
+const ClassesByTeacherPage = () => {
   const navigate = useNavigate();
-  const { classes, loading, pagination, params, setParams } = useGetClasses();
+  const { classes, loading, pagination, params, setParams } = useGetClassesByTeacher();
   
   const { searchInput, setSearchInput } = useDebouncedSearch({
     initialValue: params.search,
@@ -83,10 +83,6 @@ const ClassesPage = () => {
     navigate(`/dashboard/classes/${classItem.id}`);
   };
 
-  const handleViewStudents = (classItem: TypeClassByTeacher, e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/dashboard/classes/${classItem.id}`);
-  };
 
   const selectedModule = modulesForFilter.find((m) => m.id === params.moduleId) || null;
   const selectedCycle = cyclesForFilter.find((c) => c.id === params.cycleId) || null;
@@ -381,7 +377,7 @@ const ClassesPage = () => {
                   <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                     <IconButton
                       size="small"
-                      onClick={(e) => handleViewStudents(classItem, e)}
+                      onClick={() => handleClassClick(classItem)}
                       color="primary"
                       title="Ver detalles"
                     >
@@ -410,5 +406,5 @@ const ClassesPage = () => {
   );
 };
 
-export default ClassesPage;
+export default ClassesByTeacherPage;
 

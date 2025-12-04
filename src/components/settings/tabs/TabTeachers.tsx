@@ -33,7 +33,7 @@ import { FormTeacher } from "../forms/FormTeacher";
 import type { TypeTeacher } from "../../../types/teachers.types";
 import { TypeStatus, TypeModality } from "../../../lib/globals";
 import { formatDate } from "../../../utils/formatDate";
-import { getTeachingModeLabel } from "../../../utils/getteachingModelLabel";
+import { getTeachingModeLabel } from "../../../utils/getLabel";
 
 interface Props {
   tabValue: number;

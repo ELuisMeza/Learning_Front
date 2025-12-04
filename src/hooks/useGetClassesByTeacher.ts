@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import type { TypeClassByTeacher, TypeGetClassesByTeacherParams } from "../types/class.types";
 import { classService } from "../services/class.service";
 
-export const useGetClasses = () => {
+export const useGetClassesByTeacher = () => {
   const [classes, setClasses] = useState<TypeClassByTeacher[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
