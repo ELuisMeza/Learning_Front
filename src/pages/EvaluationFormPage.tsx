@@ -15,12 +15,17 @@ import {
   Stepper,
   Step,
   StepLabel,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material';
 import { evaluationService } from '../services/evaluation.service';
 import { rubricService } from '../services/rubric.service';
+import { classService } from '../services/class.service';
 import { useUserStore } from '../stores/user.store';
 import type { TypeEvaluation } from '../types/evaluation.types';
 import type { TypeRubric } from '../types/rubric.types';
+import type { TypeClassStudent } from '../types/class.types';
 import toast from 'react-hot-toast';
 
 const EvaluationFormPage = () => {
@@ -33,6 +38,9 @@ const EvaluationFormPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [scores, setScores] = useState<Record<string, string>>({});
+  const [classmates, setClassmates] = useState<TypeClassStudent[]>([]);
+  const [selectedEvaluatedStudent, setSelectedEvaluatedStudent] = useState<string | null>(null);
+  const [loadingClassmates, setLoadingClassmates] = useState(false);
 
   useEffect(() => {
     if (evaluationId) {
@@ -45,6 +53,12 @@ const EvaluationFormPage = () => {
       loadRubric(evaluation.rubricId);
     }
   }, [evaluation?.rubricId]);
+
+  useEffect(() => {
+    if (evaluation?.classId && evaluation.type === 'peer') {
+      loadClassmates(evaluation.classId);
+    }
+  }, [evaluation?.classId, evaluation?.type]);
 
   const loadEvaluation = async () => {
     try {
@@ -74,6 +88,19 @@ const EvaluationFormPage = () => {
       }
     } catch (error) {
       toast.error('Error al cargar la rúbrica');
+    }
+  };
+
+  const loadClassmates = async (classId: string) => {
+    try {
+      setLoadingClassmates(true);
+      const students = await classService.getClassStudents(classId);
+      // Filtrar al propio usuario para que no se autoevalúe en coevaluación
+      setClassmates(students.filter(s => s.studentId !== user?.id));
+    } catch (error) {
+      toast.error('Error al cargar compañeros de clase');
+    } finally {
+      setLoadingClassmates(false);
     }
   };
 
@@ -113,12 +140,23 @@ const EvaluationFormPage = () => {
       return;
     }
 
+    // Para coevaluación, verificar que se haya seleccionado un estudiante
+    if (evaluation?.type === 'peer' && !selectedEvaluatedStudent) {
+      toast.error('Selecciona al estudiante que vas a evaluar');
+      return;
+    }
+
     try {
       setSubmitting(true);
       // Obtener el ID del usuario evaluado
-      // Para autoevaluación es el mismo usuario, para coevaluación debería venir de parámetros
-      // Por ahora, usamos el usuario actual (esto funcionará para autoevaluación)
-      const evaluatedId = user?.id || '';
+      let evaluatedId = user?.id || ''; // Default to self-evaluation
+      if (evaluation?.type === 'peer') {
+        if (!selectedEvaluatedStudent) {
+          toast.error('Selecciona al estudiante que vas a evaluar');
+          return;
+        }
+        evaluatedId = selectedEvaluatedStudent;
+      }
       
       if (!evaluatedId) {
         toast.error('No se pudo identificar al usuario');
@@ -181,6 +219,40 @@ const EvaluationFormPage = () => {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
         {evaluation.description || 'Completa la evaluación según la rúbrica'}
       </Typography>
+
+      {/* Selector de estudiante para coevaluación */}
+      {evaluation.type === 'peer' && (
+        <Paper sx={{ p: 3, mb: 3, backgroundColor: 'info.light', color: 'info.contrastText' }}>
+          <Typography variant="h6" gutterBottom>
+            Coevaluación
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Selecciona al estudiante que vas a evaluar:
+          </Typography>
+          {loadingClassmates ? (
+            <CircularProgress size={24} />
+          ) : classmates.length === 0 ? (
+            <Alert severity="warning">
+              No hay compañeros de clase disponibles para evaluar.
+            </Alert>
+          ) : (
+            <FormControl fullWidth>
+              <InputLabel>Estudiante a evaluar</InputLabel>
+              <Select
+                value={selectedEvaluatedStudent || ''}
+                onChange={(e) => setSelectedEvaluatedStudent(e.target.value)}
+                label="Estudiante a evaluar"
+              >
+                {classmates.map((classmate) => (
+                  <MenuItem key={classmate.studentId} value={classmate.studentId}>
+                    {classmate.student?.name || 'Estudiante'} {classmate.student?.lastNameFather || ''}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </Paper>
+      )}
 
       {rubric.criteria && rubric.criteria.length > 1 && (
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>

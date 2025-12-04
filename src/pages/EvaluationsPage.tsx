@@ -29,12 +29,13 @@ import { rubricService } from '../services/rubric.service';
 import { classService } from '../services/class.service';
 import type { TypeEvaluation } from '../types/evaluation.types';
 import type { TypeRubric } from '../types/rubric.types';
-import type { TypeClass } from '../types/class.types';
+import type { TypeClassByTeacher } from '../types/class.types';
+import { TypeEvaluationMode } from '../lib/globals';
 import toast from 'react-hot-toast';
 
 const EvaluationsPage = () => {
   const [evaluations, setEvaluations] = useState<TypeEvaluation[]>([]);
-  const [classes, setClasses] = useState<TypeClass[]>([]);
+  const [classes, setClasses] = useState<TypeClassByTeacher[]>([]);
   const [rubrics, setRubrics] = useState<TypeRubric[]>([]);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -61,8 +62,16 @@ const EvaluationsPage = () => {
 
   const loadClasses = async () => {
     try {
-      const data = await classService.getClasses();
-      setClasses(data);
+      const { success, data, message } = await classService.getClassesByTeacher({
+        page: 1,
+        limit: 1000,
+        search: '',
+      });
+      if (success && data) {
+        setClasses(data.data);
+      } else {
+        toast.error(message || 'Error al cargar las clases');
+      }
     } catch (error) {
       toast.error('Error al cargar las clases');
     }
@@ -109,7 +118,24 @@ const EvaluationsPage = () => {
         toast.error('Completa todos los campos requeridos');
         return;
       }
-      await evaluationService.createEvaluation(formData);
+      // Mapear formData al formato esperado por el backend
+      const mappedFormData = {
+        classId: formData.classId,
+        name: formData.name,
+        description: formData.description || '',
+        rubricId: formData.rubricId || undefined,
+        maxScore: 100, // Valor por defecto, debería venir de la rúbrica
+        evaluationTypeId: formData.rubricId, // Usar rubricId temporalmente
+        evaluationMode: (formData.type === 'self' ? TypeEvaluationMode.SELF : formData.type === 'peer' ? TypeEvaluationMode.PEER : TypeEvaluationMode.TEACHER) as TypeEvaluationMode,
+        startDate: new Date(formData.startDate).toISOString(),
+        endDate: new Date(formData.endDate).toISOString(),
+      };
+      
+      const { success, message } = await evaluationService.create(mappedFormData);
+      if (!success) {
+        toast.error(message || 'Error al crear la evaluación');
+        return;
+      }
       toast.success('Evaluación creada exitosamente');
       setOpenDialog(false);
       setFormData({
