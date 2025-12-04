@@ -76,9 +76,35 @@ export interface TypeClassDetails {
   updatedAt: string;
 }
 
+export interface TypeClassByTeacher {
+  id: string;
+  name: string;
+  description: string;
+  credits: number;
+  typeteaching: TypeModality;
+  maxstudents: number;
+  createdat: string;
+  modulename: string;
+  modulecode: string;
+  cycleid: string;
+  cyclename: string;
+  cyclecode: string;
+  careerid: string;
+  careername: string;
+  careercode: string;
+}
+
 export interface TypeGetClassesParams extends TypeParamsGet {
   status?: TypeStatus;
   moduleId?: string;
   teacherId?: string;
   typeTeaching?: TypeModality;
+}
+
+export interface TypeGetClassesByTeacherParams extends TypeParamsGet {
+  moduleId?: string;
+  cycleId?: string;
+  carrerId?: string;
+  typeTeaching?: TypeModality;
+
 }

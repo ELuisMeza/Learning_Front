@@ -1,14 +1,18 @@
 import apiService from './apiService';
-import type { TypeClass, TypeClassDetails, TypeClassStudent, TypeClassWithPagination, TypeCreateClass, TypeGetClassesParams } from '../types/class.types';
+import type { TypeClass, TypeClassByTeacher, TypeClassDetails, TypeClassStudent, TypeClassWithPagination, TypeCreateClass, TypeGetClassesByTeacherParams, TypeGetClassesParams } from '../types/class.types';
 import type { PaginatedResponse } from '../types/utils.types';
 
 const baseUrl = '/classes';
 
 export const classService = {
   // Obtener todas las clases del docente
-  getClasses: async (): Promise<TypeClass[]> => {
-    const response = await apiService.get(baseUrl);
-    return response.data;
+  getClassesByTeacher: async (params: TypeGetClassesByTeacherParams) => {
+    try {
+      const response = await apiService.post<PaginatedResponse<TypeClassByTeacher>>(`${baseUrl}/get-all-by-teacher`, params);
+      return { success: true, data: response.data, message: 'Clases obtenidas exitosamente' };
+    } catch (error) {
+      return { success: false, message: 'Error al obtener las clases' };
+    }
   },
 
   createClass: async (data: TypeCreateClass) => {
