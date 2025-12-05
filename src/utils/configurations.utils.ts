@@ -10,6 +10,8 @@ export const getStatusColor = (status: string) => {
       return 'error';
     case 'completed':
       return 'info';
+    case 'draft':
+      return 'default';
     default:
       return 'default';
   }
@@ -27,6 +29,8 @@ export const getStatusLabel = (status: string) => {
       return 'Inactivo';
     case 'completed':
       return 'Completado';
+    case 'draft':
+      return 'Borrador';
     default:
       return status;
   }

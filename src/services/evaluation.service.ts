@@ -1,5 +1,6 @@
 import apiService from './apiService';
-import type { TypeCreateEvaluation, TypeEvaluation, TypeEvaluationResult } from '../types/evaluation.types';
+import type { TypeCreateEvaluation, TypeEvaluation, TypeEvaluationResult, TypeEvaluationWithDetails, TypeParamsEvaluation } from '../types/evaluation.types';
+import type { PaginatedResponse } from '../types/utils.types';
 
 const baseUrl = '/evaluations';
 
@@ -41,16 +42,13 @@ export const evaluationService = {
     return response.data;
   },
 
-  // Exportar resultados a Google Sheets
-  exportToGoogleSheets: async (evaluationId: string): Promise<{ url: string }> => {
-    const response = await apiService.post(`/evaluations/${evaluationId}/export/google-sheets`);
-    return response.data;
-  },
-
-  // Obtener evaluaciones del estudiante actual
-  getMyEvaluations: async (): Promise<TypeEvaluation[]> => {
-    const response = await apiService.get('/evaluations/student/me');
-    return response.data;
+  getMyEvaluationsTeacher: async ( params: TypeParamsEvaluation ) => {
+    try {
+      const response = await apiService.post<PaginatedResponse<TypeEvaluationWithDetails>>(`${baseUrl}/get-mine-teacher`, params);
+      return { success: true, data: response.data, message: 'Evaluaciones obtenidas exitosamente' };
+    } catch (error) {
+      return { success: false, message: 'Error al obtener las evaluaciones' };
+    }
   },
 
   getEvaluationTypes: async () => {

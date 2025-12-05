@@ -2,6 +2,7 @@ import type { TypeUser } from './user.types';
 import type { TypeRubric, TypeRubricCriteria, TypeRubricLevel } from './rubric.types';
 import type { TypeClass } from './class.types';
 import type { TypeEvaluationMode } from '../lib/globals';
+import type { TypeParamsGet } from './utils.types';
 
 export interface TypeEvaluation {
   id: string;
@@ -62,4 +63,32 @@ export interface TypeEvaluationType {
   description: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TypeParamsEvaluation extends TypeParamsGet {
+  classId?: string;
+  rubricId?: string;
+  evaluationTypeId?: string;
+  evaluationMode?: TypeEvaluationMode;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface TypeEvaluationWithDetails {
+  id: string;
+  classId: string;
+  name: string;
+  description: string;
+  evaluationMode: TypeEvaluationMode;
+  evaluationTypeId: string;
+  rubricId: string | null;
+  maxScore: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  className: string;
+  evaluationTypeName: string;
+  rubricName: string | null;
 }

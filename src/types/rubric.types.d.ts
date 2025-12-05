@@ -4,28 +4,55 @@ export interface TypeRubric {
   id: string;
   name: string;
   description: string;
-  classId: string;
-  class?: TypeClass;
-  fileUrl?: string; // URL del archivo Excel subido
-  criteria: TypeRubricCriteria[];
-  createdAt: string;
-  updatedAt: string;
+  createdat: string;
+  usercreatorid: string;
 }
-
-export interface TypeRubricCriteria {
-  id: string;
-  rubricId: string;
+export interface TypeCreateRubricLevelDto {
   name: string;
-  description: string;
-  weight: number; // Peso del criterio (ej: 0.25 para 25%)
-  levels: TypeRubricLevel[];
+  description?: string;
+  score: number;
 }
 
-export interface TypeRubricLevel {
+export interface TypeCreateRubricCriterionDto {
+  name: string;
+  description?: string;
+  weight?: number;
+  levels: TypeCreateRubricLevelDto[];
+}
+
+export interface TypeCreateRubricDto {
+  name: string;
+  description?: string;
+  criteria: TypeCreateRubricCriterionDto[];
+}
+
+export interface UserCreator {
   id: string;
-  criteriaId: string;
-  name: string; // Ej: "Excelente", "Bueno", "Regular", "Insuficiente"
-  score: number; // Puntuación de este nivel
-  description: string;
+  name: string;
+  email: string;
+}
+
+export interface Level {
+  id: string;
+  name: string;
+  description: string | null;
+  score: number | string;
+}
+
+export interface Criterion {
+  id: string;
+  name: string;
+  description: string | null;
+  weight: number | string;
+  levels: Level[];
+}
+
+export interface TypeRubricDetails {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: Date;
+  user_creator: UserCreator;
+  criteria: Criterion[];
 }
 
