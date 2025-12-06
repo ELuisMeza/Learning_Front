@@ -22,7 +22,12 @@ import {
   MenuItem,
   Autocomplete,
   CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
 import type { TypeClassByTeacher } from '../types/class.types';
@@ -34,10 +39,12 @@ import { TypeStatus, TypeModality } from '../lib/globals';
 import { getTeachingModeLabel } from '../utils/getLabel';
 import { formatDate } from '../utils/formatDate';
 import { useGetClassesByTeacher } from '../hooks/useGetClassesByTeacher';
+import { FormClasses } from '../components/settings/forms/FormClasses';
 
 const ClassesByTeacherPage = () => {
   const navigate = useNavigate();
-  const { classes, loading, pagination, params, setParams } = useGetClassesByTeacher();
+  const { classes, loading, pagination, params, setParams, refetch } = useGetClassesByTeacher();
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
   
   const { searchInput, setSearchInput } = useDebouncedSearch({
     initialValue: params.search,
@@ -83,6 +90,11 @@ const ClassesByTeacherPage = () => {
     navigate(`/dashboard/classes/${classItem.id}`);
   };
 
+  const handleCreateSuccess = () => {
+    setOpenCreateDialog(false);
+    refetch();
+  };
+
 
   const selectedModule = modulesForFilter.find((m) => m.id === params.moduleId) || null;
   const selectedCycle = cyclesForFilter.find((c) => c.id === params.cycleId) || null;
@@ -92,6 +104,13 @@ const ClassesByTeacherPage = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Mis Clases</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenCreateDialog(true)}
+        >
+          Nueva Clase
+        </Button>
       </Box>
 
       {/* Barra de búsqueda y filtros */}
@@ -402,6 +421,22 @@ const ClassesByTeacherPage = () => {
           />
         </Stack>
       )}
+
+      {/* Diálogo para crear clase */}
+      <Dialog 
+        open={openCreateDialog} 
+        onClose={() => setOpenCreateDialog(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>Crear Nueva Clase</DialogTitle>
+        <DialogContent>
+          <FormClasses 
+            onClose={() => setOpenCreateDialog(false)} 
+            onSuccess={handleCreateSuccess}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

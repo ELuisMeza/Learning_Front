@@ -16,10 +16,12 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useGetRubrics } from '../hooks/useGetRubrics';
 import { FormCreateRubric } from '../components/rubrics/FormCreateRubric';
 import { RubricDetailsModal } from '../components/rubrics/RubricDetailsModal';
+import { FormUploadRubricExcel } from '../components/rubrics/FormUploadRubricExcel';
 
 const RubricsPage = () => {
   const { rubrics, loading, refetch } = useGetRubrics();
   const [openDialog, setOpenDialog] = useState(false);
+  const [openExcelDialog, setOpenExcelDialog] = useState(false);
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [selectedRubricId, setSelectedRubricId] = useState<string | null>(null);
 
@@ -32,6 +34,7 @@ const RubricsPage = () => {
           <Button
             variant="outlined"
             startIcon={<UploadFileIcon />}
+            onClick={() => setOpenExcelDialog(true)}
           >
             Subir Excel
           </Button>
@@ -87,7 +90,10 @@ const RubricsPage = () => {
                   <TableCell>{rubric.name}</TableCell>
                   <TableCell>{rubric.description || '-'}</TableCell>
                   <TableCell>-</TableCell>
-                  <TableCell>-</TableCell>
+                  <TableCell>
+                    {/* La cantidad de criterios se mostrará cuando el backend lo proporcione */}
+                    {rubric.criteriaCount ?? '-'}
+                  </TableCell>
                   <TableCell>{new Date(rubric.createdat).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))
@@ -113,6 +119,15 @@ const RubricsPage = () => {
         onClose={() => {
           setOpenDetailsModal(false);
           setSelectedRubricId(null);
+        }}
+      />
+
+      <FormUploadRubricExcel
+        open={openExcelDialog}
+        onClose={() => setOpenExcelDialog(false)}
+        onSuccess={() => {
+          setOpenExcelDialog(false);
+          refetch();
         }}
       />
     </Box>

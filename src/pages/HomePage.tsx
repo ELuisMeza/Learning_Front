@@ -58,6 +58,17 @@ const StudentView = () => {
     loadStudentData();
   }, []);
 
+  // Recargar datos cuando se vuelve a la página (después de completar una evaluación)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadStudentData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   const loadStudentData = async () => {
     try {
       setLoading(true);
@@ -76,26 +87,32 @@ const StudentView = () => {
 
   // Calcular estadísticas
   const enrolledClasses = classes.length;
+  
+  // Evaluaciones completadas: usar el campo 'completed' del backend
   const completedEvaluations = evaluations.filter(
-    (e) => e.status === 'completed' || new Date(e.endDate) < new Date()
+    (e) => e.completed === true
   ).length;
+  
+  // Evaluaciones pendientes: activas, dentro del rango de fechas y NO completadas
   const pendingEvaluations = evaluations.filter((e) => {
     const now = new Date();
     const start = new Date(e.startDate);
     const end = new Date(e.endDate);
-    return e.status === 'active' && now >= start && now <= end;
+    return e.status === 'active' && now >= start && now <= end && !e.completed;
   }).length;
+  
   const totalEvaluations = evaluations.length;
   const progressPercentage = totalEvaluations > 0 
     ? Math.round((completedEvaluations / totalEvaluations) * 100) 
     : 0;
 
-  // Obtener próximas evaluaciones (próximas 3)
+  // Obtener próximas evaluaciones (próximas 3) - solo las que NO están completadas
   const upcomingEvaluations = evaluations
     .filter((e) => {
       const now = new Date();
-      const start = new Date(e.startDate);
-      return start > now && e.status === 'active';
+      const end = new Date(e.endDate);
+      // Incluir evaluaciones activas que aún no han terminado y que no están completadas
+      return e.status === 'active' && now <= end && !e.completed;
     })
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
     .slice(0, 3);

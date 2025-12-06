@@ -426,22 +426,6 @@ const ClassDetailsPage = () => {
                         {evaluation.description || "Sin descripción"}
                       </Typography>
 
-                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          sx={{ flex: 1, minWidth: "120px" }}
-                        >
-                          Ver Detalles
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          sx={{ flex: 1, minWidth: "120px" }}
-                        >
-                          Calificar
-                        </Button>
-                      </Box>
                     </CardContent>
                   </Card>
                 </Grid>

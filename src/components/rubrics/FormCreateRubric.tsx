@@ -100,12 +100,11 @@ export const FormCreateRubric = ({ open, onClose, onSuccess }: Props) => {
         criteria: criteria.map((criterion) => ({
           name: criterion.name.trim(),
           ...(criterion.description?.trim() && { description: criterion.description.trim() }),
-          ...(criterion.weight !== undefined && criterion.weight > 0 && { weight: criterion.weight }),
+          weight: criterion.weight !== undefined && criterion.weight > 0 ? criterion.weight : 1.0,
           levels: criterion.levels.map((level) => ({
             name: level.name.trim(),
-            description: level.description?.trim() || '',
-            score: level.score,
             ...(level.description?.trim() && { description: level.description.trim() }),
+            score: level.score,
           })),
         })),
       };

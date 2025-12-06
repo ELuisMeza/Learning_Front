@@ -16,6 +16,8 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@tailwindcss/vite": "^4.1.16",
+    "@types/multer": "^2.0.0",
+    "@types/xlsx": "^0.0.35",
     "axios": "^1.13.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",

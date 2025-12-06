@@ -28,6 +28,17 @@ const MyEvaluationsPage = () => {
     loadMyEvaluations();
   }, []);
 
+  // Recargar evaluaciones cuando se vuelve a la página (después de completar una evaluación)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadMyEvaluations();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   const loadMyEvaluations = async () => {
     try {
       setLoading(true);
@@ -69,37 +80,17 @@ const MyEvaluationsPage = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'draft':
-        return 'default';
-      case 'completed':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Activa';
-      case 'draft':
-        return 'Borrador';
-      case 'completed':
-        return 'Completada';
-      default:
-        return status;
-    }
-  };
 
   const isEvaluationActive = (evaluation: TypeEvaluation) => {
     const now = new Date();
     const start = new Date(evaluation.startDate);
     const end = new Date(evaluation.endDate);
     return evaluation.status === 'active' && now >= start && now <= end;
+  };
+
+  const isEvaluationCompleted = (evaluation: TypeEvaluation) => {
+    // Verificar si el estudiante ya completó la evaluación
+    return evaluation.completed === true || !!evaluation.resultId;
   };
 
   return (
@@ -144,11 +135,19 @@ const MyEvaluationsPage = () => {
                   <TableCell>{getTypeLabel(evaluation.type)}</TableCell>
                   <TableCell>{evaluation.class?.name || '-'}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={getStatusLabel(evaluation.status)}
-                      color={getStatusColor(evaluation.status) as any}
-                      size="small"
-                    />
+                    {isEvaluationCompleted(evaluation) ? (
+                      <Chip
+                        label="Completada"
+                        color="success"
+                        size="small"
+                      />
+                    ) : (
+                      <Chip
+                        label={isEvaluationActive(evaluation) ? 'Pendiente' : 'No disponible'}
+                        color={isEvaluationActive(evaluation) ? 'warning' : 'default'}
+                        size="small"
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     {new Date(evaluation.startDate).toLocaleDateString()}
@@ -157,7 +156,16 @@ const MyEvaluationsPage = () => {
                     {new Date(evaluation.endDate).toLocaleDateString()}
                   </TableCell>
                   <TableCell align="right">
-                    {isEvaluationActive(evaluation) && (
+                    {isEvaluationCompleted(evaluation) ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        onClick={() => navigate(`/dashboard/evaluation/${evaluation.id}/results`)}
+                      >
+                        Ver Resultados
+                      </Button>
+                    ) : isEvaluationActive(evaluation) ? (
                       <Button
                         variant="contained"
                         size="small"
@@ -166,18 +174,7 @@ const MyEvaluationsPage = () => {
                       >
                         Realizar
                       </Button>
-                    )}
-                    {evaluation.status === 'completed' && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<VisibilityIcon />}
-                        onClick={() => navigate(`/dashboard/evaluation/${evaluation.id}/results`)}
-                        sx={{ ml: 1 }}
-                      >
-                        Ver Resultados
-                      </Button>
-                    )}
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))
