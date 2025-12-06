@@ -13,6 +13,7 @@ import EvaluationFormPage from '../pages/EvaluationFormPage';
 import EvaluationResultsPage from '../pages/EvaluationResultsPage';
 import SettingsPage from '../pages/SettingsPage';
 import ClassDetailsPage from '../pages/ClassDetailsPage';
+import GoogleSheetsCallbackPage from '../pages/GoogleSheetsCallbackPage';
 import { useUserStore } from '../stores/user.store';
 import ClassesByTeacherPage from '../pages/ClassesByTeacherPage';
 
@@ -45,6 +46,10 @@ export const routes: RouteObject[] = [
   {
     path: '/auth/callback',
     element: <AuthCallbackPage />,
+  },
+  {
+    path: '/google-sheets/callback',
+    element: <GoogleSheetsCallbackPage />,
   },
   {
     path: '/dashboard',

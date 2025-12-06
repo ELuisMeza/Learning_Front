@@ -6,6 +6,7 @@ export interface TypeRubric {
   description: string;
   createdat: string;
   usercreatorid: string;
+  criteriaCount?: number; // Cantidad de criterios (opcional)
 }
 export interface TypeCreateRubricLevelDto {
   name: string;

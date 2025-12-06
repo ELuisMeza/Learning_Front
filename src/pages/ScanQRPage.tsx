@@ -15,6 +15,7 @@ import {
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import CloseIcon from '@mui/icons-material/Close';
 import { classService } from '../services/class.service';
+import { evaluationService } from '../services/evaluation.service';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,27 +30,69 @@ const ScanQRPage = () => {
   const scanningRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Función para detectar si es un UUID (evaluación) o código de clase
+  const isUUID = (str: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
+  const processScannedCode = async (scannedCode: string) => {
+    if (!scannedCode || loading) return;
+
+    try {
+      setLoading(true);
+      stopScanning();
+
+      const trimmedCode = scannedCode.trim();
+      
+      // Detectar si es un UUID (evaluación) o código de clase
+      if (isUUID(trimmedCode)) {
+        // Es una evaluación (UUID)
+        try {
+          const evaluation = await evaluationService.getEvaluationById(trimmedCode);
+          
+          // Verificar que la evaluación esté activa
+          const now = new Date();
+          const startDate = new Date(evaluation.startDate);
+          const endDate = new Date(evaluation.endDate);
+          
+          if (evaluation.status !== 'active' || now < startDate || now > endDate) {
+            toast.error('Esta evaluación no está disponible en este momento');
+            return;
+          }
+
+          // Redirigir directamente a la evaluación
+          toast.success(`Accediendo a la evaluación: ${evaluation.name}`);
+          navigate(`/dashboard/evaluation/${evaluation.id}`);
+        } catch (error: any) {
+          // Si no es una evaluación válida, intentar como clase
+          const classData = await classService.getClassByCode(trimmedCode);
+          await classService.enrollStudent(classData.id);
+          toast.success(`Te has inscrito exitosamente a la clase: ${classData.name}`);
+          navigate('/dashboard/my-classes');
+        }
+      } else {
+        // Es un código de clase
+        const classData = await classService.getClassByCode(trimmedCode);
+        await classService.enrollStudent(classData.id);
+        toast.success(`Te has inscrito exitosamente a la clase: ${classData.name}`);
+        navigate('/dashboard/my-classes');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Error al procesar el código';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleManualCode = async () => {
     if (!code.trim()) {
       toast.error('Ingresa un código');
       return;
     }
 
-    try {
-      setLoading(true);
-      const classData = await classService.getClassByCode(code.trim());
-      
-      // Inscribirse a la clase
-      await classService.enrollStudent(classData.id);
-      
-      toast.success(`Te has inscrito exitosamente a la clase: ${classData.name}`);
-      navigate('/dashboard/my-classes');
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al inscribirse a la clase';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    await processScannedCode(code.trim());
   };
 
   useEffect(() => {
@@ -97,26 +140,7 @@ const ScanQRPage = () => {
   };
 
   const processQRCode = async (qrCode: string) => {
-    if (!qrCode || loading) return;
-
-    try {
-      setLoading(true);
-      stopScanning();
-      
-      const classData = await classService.getClassByCode(qrCode.trim());
-      
-      // Inscribirse a la clase
-      await classService.enrollStudent(classData.id);
-      
-      toast.success(`Te has inscrito exitosamente a la clase: ${classData.name}`);
-      navigate('/dashboard/my-classes');
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al inscribirse a la clase';
-      toast.error(errorMessage);
-      // No reiniciar automáticamente, el usuario puede intentar de nuevo
-    } finally {
-      setLoading(false);
-    }
+    await processScannedCode(qrCode);
   };
 
   const loadQRScannerFromCDN = (): Promise<void> => {
@@ -249,10 +273,10 @@ const ScanQRPage = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Inscribirse a una Clase
+        Escanear Código QR
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Escanea el código QR de tu docente o ingresa el código manualmente
+        Escanea el código QR de una clase para inscribirte o de una evaluación para acceder directamente
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
@@ -262,7 +286,7 @@ const ScanQRPage = () => {
             <QrCodeScannerIcon sx={{ fontSize: 64, color: 'primary.main' }} />
             <Typography variant="h6">Escanear Código QR</Typography>
             <Typography variant="body2" color="text.secondary" align="center">
-              Usa la cámara de tu dispositivo para escanear el código QR de la clase
+              Usa la cámara de tu dispositivo para escanear el código QR de una clase o evaluación
             </Typography>
             <Button
               variant="contained"
@@ -331,13 +355,13 @@ const ScanQRPage = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">Ingresar Código Manualmente</Typography>
             <Typography variant="body2" color="text.secondary">
-              Si tienes el código de la clase, ingrésalo aquí
+              Si tienes el código de la clase o el ID de la evaluación, ingrésalo aquí
             </Typography>
             <TextField
-              label="Código de la Clase"
+              label="Código o ID"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Ej: ABC123"
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Ej: ABC123 o ID de evaluación"
               fullWidth
               disabled={loading}
             />

@@ -68,6 +68,15 @@ export const FormCreateEvaluation = ({ open, onClose, classId, onSuccess }: Prop
         return;
       }
 
+      // Validar que si NO es "Examen", debe tener una rúbrica asignada
+      const evaluationType = evaluationTypes.find((type) => type.id === formData.evaluationTypeId);
+      const isExamen = evaluationType && evaluationType.name.toLowerCase() === 'examen';
+      
+      if (!isExamen && !formData.rubricId) {
+        toast.error('Las evaluaciones que no son de tipo "Examen" requieren una rúbrica asignada');
+        return;
+      }
+
       setLoading(true);
       const { success, message, data } = await evaluationService.create({
         classId: classId,
@@ -126,47 +135,22 @@ export const FormCreateEvaluation = ({ open, onClose, classId, onSuccess }: Prop
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>Crear Nueva Evaluación</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 2, mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>Rúbrica (Opcional)</InputLabel>
-              <Select
-                value={formData.rubricId}
-                label="Rúbrica (Opcional)"
-                disabled={loadingRubrics}
-                onChange={(e) => setFormData({ ...formData, rubricId: e.target.value })}
-              >
-                <MenuItem value="">
-                  <em>Sin rúbrica</em>
-                </MenuItem>
-                {loadingRubrics ? (
-                  <MenuItem disabled>Cargando rúbricas...</MenuItem>
-                ) : rubrics.length === 0 ? (
-                  <MenuItem disabled>No hay rúbricas disponibles</MenuItem>
-                ) : (
-                  rubrics.map((rubric) => (
-                    <MenuItem key={rubric.id} value={rubric.id}>
-                      {rubric.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-            <IconButton
-              color="primary"
-              onClick={() => setOpenRubricDialog(true)}
-              sx={{ mt: 1 }}
-              title="Crear nueva rúbrica"
-            >
-              <AddIcon />
-            </IconButton>
-          </Box>
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Tipo de Evaluación</InputLabel>
             <Select
               value={formData.evaluationTypeId}
               label="Tipo de Evaluación"
               disabled={loadingTypes}
-              onChange={(e) => setFormData({ ...formData, evaluationTypeId: e.target.value })}
+              onChange={(e) => {
+                const newTypeId = e.target.value;
+                // Si cambia a "Examen", limpiar la rúbrica (no es necesaria)
+                const selectedType = evaluationTypes.find((type) => type.id === newTypeId);
+                if (selectedType && selectedType.name.toLowerCase() === 'examen') {
+                  setFormData({ ...formData, evaluationTypeId: newTypeId, rubricId: '' });
+                } else {
+                  setFormData({ ...formData, evaluationTypeId: newTypeId });
+                }
+              }}
               required
             >
               {loadingTypes ? (
@@ -182,6 +166,50 @@ export const FormCreateEvaluation = ({ open, onClose, classId, onSuccess }: Prop
               )}
             </Select>
           </FormControl>
+          
+          {/* Mostrar campo de rúbrica solo si NO es "Examen" */}
+          {formData.evaluationTypeId && (() => {
+            const selectedType = evaluationTypes.find((type) => type.id === formData.evaluationTypeId);
+            const isExamen = selectedType && selectedType.name.toLowerCase() === 'examen';
+            
+            if (!isExamen) {
+              return (
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 2 }}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Rúbrica *</InputLabel>
+                    <Select
+                      value={formData.rubricId}
+                      label="Rúbrica *"
+                      disabled={loadingRubrics}
+                      onChange={(e) => setFormData({ ...formData, rubricId: e.target.value })}
+                      error={!formData.rubricId}
+                    >
+                      {loadingRubrics ? (
+                        <MenuItem disabled>Cargando rúbricas...</MenuItem>
+                      ) : rubrics.length === 0 ? (
+                        <MenuItem disabled>No hay rúbricas disponibles. Crea una primero.</MenuItem>
+                      ) : (
+                        rubrics.map((rubric) => (
+                          <MenuItem key={rubric.id} value={rubric.id}>
+                            {rubric.name}
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                  </FormControl>
+                  <IconButton
+                    color="primary"
+                    onClick={() => setOpenRubricDialog(true)}
+                    sx={{ mt: 1 }}
+                    title="Crear nueva rúbrica"
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              );
+            }
+            return null;
+          })()}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Modo de Evaluación</InputLabel>
             <Select
