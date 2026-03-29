@@ -5,7 +5,12 @@ import {
   Button,
   Typography,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import toast from 'react-hot-toast';
 import { authService } from '../services/auth.service';
 import { useUserStore } from '../stores/user.store';
@@ -16,6 +21,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
   const navigate = useNavigate();
   const { setToken, setUser } = useUserStore();
 
@@ -50,15 +56,47 @@ const LoginPage = () => {
 
       <div className="flex w-full md:w-1/2 justify-center items-center p-8">
         <Box sx={{ width: '100%', maxWidth: 400 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            gutterBottom
-            align="center"
-            sx={{ fontWeight: 'bold' }}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              columnGap: 1.5,
+              mb: 2,
+            }}
           >
-            Bienvenido de nuevo
-          </Typography>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{ fontWeight: 'bold', textAlign: 'center', m: 0 }}
+            >
+              Bienvenido de nuevo
+            </Typography>
+            <Button
+              type="button"
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={() => setDemoOpen(true)}
+              aria-label="Ver credenciales de demostración"
+              startIcon={<HelpOutlineIcon fontSize="small" />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 2,
+                flexShrink: 0,
+                animation: 'login-demo-pulse 2s ease-in-out infinite',
+                '@keyframes login-demo-pulse': {
+                  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                  '50%': { transform: 'scale(1.06)', opacity: 0.88 },
+                },
+              }}
+            >
+              Credenciales de demo
+            </Button>
+          </Box>
 
           <Typography
             variant="body1"
@@ -119,6 +157,42 @@ const LoginPage = () => {
               {loading ? 'Conectando...' : 'Continuar con Google'}
             </Button>
           </Box>
+
+          <Dialog
+            open={demoOpen}
+            onClose={() => setDemoOpen(false)}
+            maxWidth="xs"
+            fullWidth
+            slotProps={{
+              paper: { sx: { borderRadius: 2 } },
+            }}
+          >
+            <DialogTitle sx={{ pb: 0.5, fontSize: '1rem' }}>
+              Acceso de demostración
+            </DialogTitle>
+            <DialogContent sx={{ pt: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Credenciales para acceder:
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Correo
+              </Typography>
+              <Typography variant="body2" sx={{ fontFamily: 'monospace', mb: 1 }}>
+                admin@example.com
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Contraseña
+              </Typography>
+              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                admin123
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ px: 2, pb: 2 }}>
+              <Button onClick={() => setDemoOpen(false)} size="small" variant="contained">
+                Entendido
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </div>
     </div>
