@@ -45,7 +45,6 @@ const GoogleSheetsCallbackPage = () => {
 
         // Si hay una exportación pendiente, ejecutarla
         const pendingEvaluationId = sessionStorage.getItem('pending_export_evaluation_id');
-        const pendingEvaluationName = sessionStorage.getItem('pending_export_evaluation_name');
 
         if (pendingEvaluationId) {
           sessionStorage.removeItem('pending_export_evaluation_id');
