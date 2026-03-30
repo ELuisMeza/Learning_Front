@@ -21,7 +21,10 @@ import {
   Popper,
   ClickAwayListener,
   ListItemAvatar,
+  Tooltip,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -40,9 +43,15 @@ import { useDebounce } from '../hooks/useDebounce';
 import toast from 'react-hot-toast';
 
 const drawerWidth = 240;
+/** Rail solo iconos en viewports estrechos (ahorra espacio horizontal) */
+const drawerWidthCompact = 64;
 
 const SideBar = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [open, setOpen] = useState(true);
+
+  const effectiveDrawerWidth = open ? (isMobile ? drawerWidthCompact : drawerWidth) : 0;
   const navigate = useNavigate();
   const location = useLocation();
   const logout = useUserStore((state) => state.logout);
@@ -281,8 +290,8 @@ const SideBar = () => {
         position="fixed"
         elevation={0}
         sx={{
-          width: open ? `calc(100% - ${drawerWidth}px)` : '100%',
-          ml: open ? `${drawerWidth}px` : 0,
+          width: open ? `calc(100% - ${effectiveDrawerWidth}px)` : '100%',
+          ml: open ? `${effectiveDrawerWidth}px` : 0,
           backgroundColor: '#ffffff',
           color: 'text.primary',
           borderBottom: '1px solid #e0e0e0',
@@ -482,10 +491,10 @@ const SideBar = () => {
       <Drawer
         variant="permanent"
         sx={{
-          width: open ? drawerWidth : 0,
+          width: effectiveDrawerWidth,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
+            width: effectiveDrawerWidth,
             boxSizing: 'border-box',
             backgroundColor: '#ffffff',
             borderRight: '1px solid #e0e0e0',
@@ -494,7 +503,7 @@ const SideBar = () => {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,
               }),
-            ...(open ? {} : { overflowX: 'hidden', width: 0 }),
+            ...(!open ? { overflowX: 'hidden', width: 0 } : {}),
           },
           transition: (theme) =>
             theme.transitions.create('width', {
@@ -509,17 +518,25 @@ const SideBar = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: open ? 'flex-start' : 'center',
-            px: 2,
-            minHeight: '80px !important',
+            justifyContent: open ? (isMobile ? 'center' : 'flex-start') : 'center',
+            px: isMobile ? 0.5 : 2,
+            minHeight: isMobile ? '64px !important' : '80px !important',
           }}
         >
           {open && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+              }}
+            >
               <Box
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
                   borderRadius: 1,
                   backgroundColor: 'primary.main',
                   display: 'flex',
@@ -532,14 +549,16 @@ const SideBar = () => {
               >
                 L
               </Box>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                  Learning
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  {user?.role?.name || 'Usuario'}
-                </Typography>
-              </Box>
+              {!isMobile && (
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+                    Learning
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    {user?.role?.name || 'Usuario'}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           )}
           {!open && (
@@ -552,50 +571,58 @@ const SideBar = () => {
         {open && (
           <>
             <Divider />
-            <Box sx={{ px: 2, py: 1 }}>
+            <Box sx={{ px: 2, py: 1, display: { xs: 'none', md: 'block' } }}>
               <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: '0.7rem', fontWeight: 600 }}>
                 MENÚ PRINCIPAL
               </Typography>
             </Box>
-            <List sx={{ px: 1 }}>
+            <List sx={{ px: isMobile ? 0.5 : 1 }}>
               {menuItems.map((item: TypeMenuItem) => (
                 <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    selected={location.pathname === item.path}
-                    onClick={() => navigate(item.path)}
-                    sx={{
-                      borderRadius: 2,
-                      '&.Mui-selected': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: 'primary.dark',
-                        },
-                        '& .MuiListItemIcon-root': {
-                          color: 'white',
-                        },
-                      },
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  >
-                    <ListItemIcon
+                  <Tooltip title={isMobile ? item.text : ''} placement="right" disableHoverListener={!isMobile}>
+                    <ListItemButton
+                      selected={location.pathname === item.path}
+                      onClick={() => navigate(item.path)}
                       sx={{
-                        minWidth: 40,
-                        color: location.pathname === item.path ? 'white' : 'text.secondary',
+                        borderRadius: 2,
+                        justifyContent: isMobile ? 'center' : 'flex-start',
+                        px: isMobile ? 1 : 2,
+                        minHeight: isMobile ? 48 : undefined,
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
                       }}
                     >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        fontSize: '0.9rem',
-                        fontWeight: location.pathname === item.path ? 600 : 400,
-                      }}
-                    />
-                  </ListItemButton>
+                      <ListItemIcon
+                        sx={{
+                          minWidth: isMobile ? 0 : 40,
+                          justifyContent: 'center',
+                          color: location.pathname === item.path ? 'white' : 'text.secondary',
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      {!isMobile && (
+                        <ListItemText
+                          primary={item.text}
+                          primaryTypographyProps={{
+                            fontSize: '0.9rem',
+                            fontWeight: location.pathname === item.path ? 600 : 400,
+                          }}
+                        />
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
                 </ListItem>
               ))}
             </List>
@@ -607,8 +634,8 @@ const SideBar = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: open ? `calc(100% - ${drawerWidth}px)` : '100%',
+          p: { xs: 2, sm: 3 },
+          width: open ? `calc(100% - ${effectiveDrawerWidth}px)` : '100%',
           transition: (theme) =>
             theme.transitions.create(['width', 'margin'], {
               easing: theme.transitions.easing.sharp,
